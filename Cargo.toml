@@ -37,4 +37,7 @@ bytemuck = {version = "1.12", features = ["derive"]}
 nalgebra = "0.31"
 
 # 軽量スレッド同期プリミティブ
-parking_lot = "0.12.1"
+parking_lot = "0.12"
+
+# WGPUの文字表示
+wgpu_glyph = "0.17"

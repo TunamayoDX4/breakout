@@ -19,6 +19,11 @@ impl super::WGContext {
                 label: Some("Render encoder"), 
             }
         );
+        let mut font_enc = self.device.create_command_encoder(
+            &wgpu::CommandEncoderDescriptor {
+                label: Some("Font render encoder"), 
+            }
+        );
 
         // カメラの更新
         self.camera.update(&self.size);
@@ -99,7 +104,59 @@ impl super::WGContext {
                 0..self.raw_instances.len() as _
             );
         }
+
+        {
+            let _ = font_enc.begin_render_pass(
+                &wgpu::RenderPassDescriptor {
+                    label: Some("Font render pass"),
+                    color_attachments: &[Some(
+                        wgpu::RenderPassColorAttachment {
+                            view: &view,
+                            resolve_target: None,
+                            ops: wgpu::Operations { 
+                                load: wgpu::LoadOp::Load, 
+                                store: true 
+                            },
+                        }
+                    )],
+                    depth_stencil_attachment: None,
+                }
+            );
+        }
+        self.ipaexg_glyph.queue(wgpu_glyph::Section {
+            screen_position: (32., 16.),
+            bounds: (self.size.width as f32, self.size.height as f32),
+            text: vec![
+                wgpu_glyph::Text::new("残弾数 : 5")
+                    .with_color([1., 1., 1., 1.])
+                    .with_scale(16.)
+            ],
+            ..Default::default()
+        });
+        self.ipaexg_glyph.queue(wgpu_glyph::Section {
+            screen_position: (128., 16.),
+            bounds: (self.size.width as f32, self.size.height as f32),
+            text: vec![
+                wgpu_glyph::Text::new("がんばれー")
+                    .with_color([1., 1., 1., 1.])
+                    .with_scale(16.)
+            ],
+            ..Default::default()
+        });
+        self.ipaexg_glyph.draw_queued(
+            &self.device, 
+            &mut self.font_belt, 
+            &mut font_enc, 
+            &view, 
+            self.size.width, 
+            self.size.height
+        )
+            .expect("Font draw queue");
+
+        self.font_belt.finish();
+        self.font_belt.recall();
         self.queue.submit(std::iter::once(enc.finish()));
+        self.queue.submit(std::iter::once(font_enc.finish()));
         output.present();
     
         Ok(())
