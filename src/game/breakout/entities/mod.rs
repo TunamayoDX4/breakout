@@ -57,7 +57,7 @@ impl BreakOutEntities {
         self.paddle.update(disp_size, state, &mut self.ball);
         self.paddle.change_color(state, &self.ball);
     }
-    pub fn input(&mut self, keycode: VirtualKeyCode, state: ElementState) {
+    pub fn key_input(&mut self, keycode: VirtualKeyCode, state: ElementState) {
         let state = state == ElementState::Pressed;
         match keycode {
             VirtualKeyCode::A => self.paddle.move_flag.move_left = state, 
@@ -65,6 +65,9 @@ impl BreakOutEntities {
             VirtualKeyCode::Space => self.paddle.move_flag.ball_shot = state, 
             _ => {}, 
         }
+    }
+    pub fn mouse_motion_input(&mut self, input: crate::MouseMoveInput) {
+        self.paddle.move_flag.move_delta = input.0.x;
     }
 }
 impl AsInstance for BreakOutEntities {

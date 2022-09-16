@@ -2,12 +2,14 @@
 pub struct PaddleMoveFlag {
     pub move_left: bool, 
     pub move_right: bool, 
+    pub move_delta: f32, 
     pub ball_shot: bool, 
 }
 impl Default for PaddleMoveFlag {
     fn default() -> Self { Self { 
         move_left: false, 
         move_right: false, 
+        move_delta: 0., 
         ball_shot: false, 
     }}
 }
@@ -72,6 +74,8 @@ impl Paddle {
         if self.move_flag.move_left && 0. < self.model.position.x - speed {
             self.model.position.x -= speed;
         }
+        self.model.position.x += self.move_flag.move_delta;
+        self.move_flag.move_delta = 0.;
     }
     pub fn change_color(
         &mut self, 

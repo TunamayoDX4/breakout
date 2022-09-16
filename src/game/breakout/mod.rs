@@ -57,7 +57,20 @@ impl super::scene::GameScene for BreakOut {
         keycode: winit::event::VirtualKeyCode, 
         elem_state: winit::event::ElementState
     ) { 
-        self.entities.input(keycode, elem_state);
+        self.entities.key_input(keycode, elem_state);
+    }
+
+    fn mouse_button_input(&mut self, button: winit::event::MouseButton, elem_state: winit::event::ElementState) {
+        
+    }
+
+    fn mouse_wheel_input(&mut self, delta: winit::event::MouseScrollDelta) {
+        
+    }
+
+    fn mouse_motion_input(&mut self, delta: crate::MouseMoveInput) {
+        log::debug!("{delta:?}");
+        self.entities.mouse_motion_input(delta);
     }
 
     fn rendering(

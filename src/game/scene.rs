@@ -1,7 +1,7 @@
 //! シーンシステムの実装
 
 use std::{collections::VecDeque, borrow::Cow};
-use winit::event::{VirtualKeyCode, ElementState};
+use winit::event::{VirtualKeyCode, ElementState, MouseButton, MouseScrollDelta};
 
 pub trait GameScene {
     fn name(&self) -> Cow<'static, str>;
@@ -11,6 +11,9 @@ pub trait GameScene {
         gfx_ctx: &crate::gfx::WGContext
     ) -> anyhow::Result<SceneController>;
     fn key_input(&mut self, keycode: VirtualKeyCode, elem_state: ElementState);
+    fn mouse_button_input(&mut self, button: MouseButton, elem_state: ElementState);
+    fn mouse_wheel_input(&mut self, delta: MouseScrollDelta);
+    fn mouse_motion_input(&mut self, delta: crate::MouseMoveInput);
     fn rendering(
         &mut self, 
         state: &mut super::state::GameState, 
@@ -34,6 +37,18 @@ impl SceneCollector {
     }
     pub fn key_input(&mut self, keycode: VirtualKeyCode, elem_state: ElementState) {
         self.0.back_mut().map(|s| s.key_input(keycode, elem_state));
+    }
+    pub fn mouse_button_input(&mut self, button: MouseButton, elem_state: ElementState) {
+        self.0.back_mut().map(|s| s.mouse_button_input(button, elem_state));
+    }
+    pub fn mouse_wheel_input(&mut self, delta: MouseScrollDelta) {
+        self.0.back_mut().map(|s| s.mouse_wheel_input(delta));
+    }
+    pub fn mouse_motion_input(&mut self, delta: crate::MouseMoveInput) {
+        self.0.back_mut().map(|s| s.mouse_motion_input(delta));
+    }
+    pub fn flush_all(&mut self) {
+        self.0.clear()
     }
     pub fn update(
         &mut self, 
