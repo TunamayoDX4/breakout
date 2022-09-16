@@ -1,12 +1,34 @@
 use std::sync::Arc;
 
-use winit::{event_loop::EventLoop, window::WindowBuilder, event::{Event, WindowEvent, KeyboardInput, VirtualKeyCode}};
+use winit::{event_loop::EventLoop, window::WindowBuilder, event::{Event, WindowEvent, KeyboardInput, VirtualKeyCode, DeviceEvent}};
 
 /// グラフィクス
 pub mod gfx;
 
 /// ゲーム本体の実装
 pub mod game;
+
+/// マウスの移動率入力のバッファ
+pub struct MouseMoveBuffer {
+    move_vol: nalgebra::Vector2<f32>, 
+}
+impl MouseMoveBuffer {
+    pub fn new() -> Self { Self {
+        move_vol: Default::default()
+    } }
+    pub fn input(&mut self, move_vol: nalgebra::Vector2<f32>) {
+        self.move_vol += move_vol
+    }
+    pub fn finalize(&mut self) -> MouseMoveInput {
+        let input = MouseMoveInput(self.move_vol);
+        self.move_vol = Default::default();
+        input
+    }
+}
+
+/// マウスの移動率データ
+#[derive(Clone, Copy, Debug)]
+pub struct MouseMoveInput(pub nalgebra::Vector2<f32>);
 
 /// コンテキストのスポーン及び実行
 async fn run() -> anyhow::Result<()> {
@@ -24,6 +46,7 @@ async fn run() -> anyhow::Result<()> {
             Ok(Box::new(game::breakout::BreakOut::new(ctx)?))
         }
     )?;
+    let mut mouse_buffer = MouseMoveBuffer::new();
 
     // イベントをポーリングします。終了した場合はmainには戻らず、ここで終了となります。
     ev_loop.run(move |ev, _, ctl| match ev {
@@ -41,8 +64,21 @@ async fn run() -> anyhow::Result<()> {
                 }, 
                 .. 
             } => game_ctx.key_input(*keycode, *state), 
+            WindowEvent::MouseInput { 
+                state, 
+                button, 
+                .. 
+            } => game_ctx.mouse_button_input(*button, *state), 
+            WindowEvent::MouseWheel { 
+                delta, 
+                .. 
+            } => game_ctx.mouse_wheel_input(*delta), 
             _ => {}, 
         }, 
+        Event::DeviceEvent { 
+            event: DeviceEvent::MouseMotion { delta }, 
+            ..
+        } => mouse_buffer.input([delta.0 as f32, delta.1 as f32].into()), 
         Event::RedrawRequested(window_id) if window_id == window.id() => {
             // 再描画処理
             let rc = match wgpu_ctx.lock().rendering() {
@@ -64,12 +100,24 @@ async fn run() -> anyhow::Result<()> {
             };
             if let Some(rc) = rc { game_ctx.rendering(rc) }
         }, 
+        // すべてのイベントがクリアされたら
         Event::MainEventsCleared => {
-            // 全てのイベントがクリアされたらゲームの処理及び再描画
+            window.set_cursor_visible(false);
+            window.set_cursor_grab(
+                winit::window::CursorGrabMode::Confined
+            ).expect("Set cursor grab error");
+            // マウス入力の完了
+            let input = mouse_buffer.finalize();
+            log::debug!("mouse motion: {input:?}");
+            game_ctx.mouse_motion_input(input);
+
+            // ゲームの処理
             match game_ctx.update().expect("Game context update error") {
                 game::scene::SceneUpdateResult::Updated(_) => {},
                 game::scene::SceneUpdateResult::EmptyScene => ctl.set_exit(),
-            }
+            };
+
+            // 再描画
             window.request_redraw();
         }, 
         _ => {},  
@@ -94,7 +142,7 @@ fn fern_init() -> anyhow::Result<()> {
         )))
         // ログの表示レベルの指定
         // INFO以下の優先度のログは破棄
-        .level(log::LevelFilter::Info)
+        .level(log::LevelFilter::Debug)
         // wgpu_core::deviceからのログレベルをWARNに指定
         .level_for("wgpu_core::device", log::LevelFilter::Warn)
         // ログのアウトプット先の指定
