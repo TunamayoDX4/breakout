@@ -61,7 +61,7 @@ impl super::scene::GameScene for BreakOut {
     }
 
     fn mouse_button_input(&mut self, button: winit::event::MouseButton, elem_state: winit::event::ElementState) {
-        
+        self.entities.mouse_input(button, elem_state);
     }
 
     fn mouse_wheel_input(&mut self, delta: winit::event::MouseScrollDelta) {
@@ -69,7 +69,6 @@ impl super::scene::GameScene for BreakOut {
     }
 
     fn mouse_motion_input(&mut self, delta: crate::MouseMoveInput) {
-        log::debug!("{delta:?}");
         self.entities.mouse_motion_input(delta);
     }
 
@@ -79,8 +78,9 @@ impl super::scene::GameScene for BreakOut {
         gfx_ctx: &crate::gfx::WGContext, 
         rendering_chain: crate::gfx::RenderingChain
     ) -> crate::gfx::RenderingChain {
-        let r: [&mut dyn crate::gfx::WGRenderer; 1] = [
-            &mut self.renderer
+        let r: [&mut dyn crate::gfx::WGRenderer; 2] = [
+            &mut self.renderer, 
+            &mut state.ipaexg_, 
         ];
         rendering_chain.rendering(gfx_ctx, r)
     }

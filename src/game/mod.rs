@@ -2,6 +2,9 @@
 
 type PMutex<T> = parking_lot::Mutex<T>;
 
+/// ユーティリティ
+pub mod util;
+
 /// ゲーム本体の状態
 pub mod state;
 
@@ -32,7 +35,7 @@ impl GameCtx {
             );
             let state = state::GameState::new(
                 &gfx_ctx_lock
-            );
+            )?;
             (scenes, state)
         };
         Ok(Self {

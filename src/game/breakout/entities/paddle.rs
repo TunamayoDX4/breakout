@@ -76,6 +76,11 @@ impl Paddle {
         }
         self.model.position.x += self.move_flag.move_delta;
         self.move_flag.move_delta = 0.;
+        if self.model.position.x < -self.model.size.x / 2. { 
+            self.model.position.x = -self.model.size.x / 2. 
+        } else if self.model.position.x > disp_size.x + self.model.size.x / 2. { 
+            self.model.position.x = disp_size.x + self.model.size.x / 2.
+        }
     }
     pub fn change_color(
         &mut self, 

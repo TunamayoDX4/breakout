@@ -41,3 +41,6 @@ parking_lot = "0.12"
 
 # WGPUの文字表示
 wgpu_glyph = "0.17"
+
+# ハッシュテーブル
+hashbrown = "0.12"

@@ -1,6 +1,15 @@
 use std::sync::Arc;
 
-use winit::{event_loop::EventLoop, window::WindowBuilder, event::{Event, WindowEvent, KeyboardInput, VirtualKeyCode, DeviceEvent}};
+use winit::{
+    event_loop::EventLoop, 
+    window::WindowBuilder, 
+    event::{
+        Event, 
+        WindowEvent, 
+        KeyboardInput, 
+        DeviceEvent
+    }
+};
 
 /// グラフィクス
 pub mod gfx;
@@ -108,7 +117,6 @@ async fn run() -> anyhow::Result<()> {
             ).expect("Set cursor grab error");
             // マウス入力の完了
             let input = mouse_buffer.finalize();
-            log::debug!("mouse motion: {input:?}");
             game_ctx.mouse_motion_input(input);
 
             // ゲームの処理
@@ -142,9 +150,19 @@ fn fern_init() -> anyhow::Result<()> {
         )))
         // ログの表示レベルの指定
         // INFO以下の優先度のログは破棄
-        .level(log::LevelFilter::Debug)
-        // wgpu_core::deviceからのログレベルをWARNに指定
-        .level_for("wgpu_core::device", log::LevelFilter::Warn)
+        .level(if cfg!(debug_assertions) {
+            log::LevelFilter::Debug
+        } else {
+            log::LevelFilter::Info
+        })
+        .level_for(
+            "wgpu_core::device", 
+            if cfg!(debug_assertions) {
+                log::LevelFilter::Debug
+            } else {
+                log::LevelFilter::Warn
+            }
+        )
         // ログのアウトプット先の指定
         // 標準出力を指定
         .chain(std::io::stdout())

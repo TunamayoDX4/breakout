@@ -1,6 +1,6 @@
 //! ブロック崩しのエンティティの実装
 
-use winit::event::{VirtualKeyCode, ElementState};
+use winit::event::{VirtualKeyCode, ElementState, MouseButton};
 
 use super::renderer::model::{Instance, AsInstance, RawInstArray};
 
@@ -63,6 +63,13 @@ impl BreakOutEntities {
             VirtualKeyCode::A => self.paddle.move_flag.move_left = state, 
             VirtualKeyCode::D => self.paddle.move_flag.move_right = state, 
             VirtualKeyCode::Space => self.paddle.move_flag.ball_shot = state, 
+            _ => {}, 
+        }
+    }
+    pub fn mouse_input(&mut self, button: MouseButton, state: ElementState) {
+        let state = state == ElementState::Pressed;
+        match button {
+            MouseButton::Left => self.paddle.move_flag.ball_shot = state,
             _ => {}, 
         }
     }

@@ -168,6 +168,7 @@ dependencies = [
  "bytemuck",
  "chrono",
  "fern",
+ "hashbrown",
  "log",
  "nalgebra",
  "parking_lot 0.12.1",
