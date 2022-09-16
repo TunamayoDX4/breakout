@@ -22,14 +22,14 @@ impl Ball {
     } }
     pub fn update(&mut self, state: &super::super::state::BreakOutGameState) {
         match state.state {
-            crate::game::state::GameState::Yes => {},
-            crate::game::state::GameState::GameOver => self.model.color = [1., 0., 0., 0.],
-            crate::game::state::GameState::GameClear => self.model.color = [0., 0., 0., 0.],
+            super::super::state::GameState::Yes => {},
+            super::super::state::GameState::GameOver => self.model.color = [1., 0., 0., 0.],
+            super::super::state::GameState::GameClear => self.model.color = [0., 0., 0., 0.],
         }
     }
     pub fn moving(&mut self, state: &super::super::state::BreakOutGameState) {
         match state.state {
-            crate::game::state::GameState::Yes => {
+            super::super::state::GameState::Yes => {
                 self.angle = self.angle.normalize();
                 self.model.position += self.angle * self.speed;
             },

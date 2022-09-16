@@ -1,42 +1,31 @@
-//! ゲーム内部のエンティティの実装
+//! ブロック崩しのエンティティの実装
 
-use winit::event::VirtualKeyCode;
+use winit::event::{VirtualKeyCode, ElementState};
 
-use crate::gfx::model::{Instance, RawInstArray, AsInstance};
+use super::renderer::model::{Instance, AsInstance, RawInstArray};
 
-/// パドル
-pub mod paddle;
-
-/// ボール
+pub mod brick;
 pub mod ball;
-
-/// 着弾地点の表示
+pub mod paddle;
 pub mod pointer;
 
-/// ブロック
-pub mod brick;
-
-/// インジケータ
-pub mod indicator;
-
-/// エンティティ
 pub struct BreakOutEntities {
-    paddle: paddle::Paddle, 
+    bricks: brick::BrickColumn, 
     ball: Option<ball::Ball>, 
+    paddle: paddle::Paddle, 
     pointer: pointer::Pointer, 
-    brick: brick::BrickColumn, 
 }
 impl BreakOutEntities {
     pub fn new(
         disp_size: nalgebra::Vector2<f32>, 
-    ) -> Self { Self {
+    )-> Self { Self {
         paddle: paddle::Paddle::spawn(
             [disp_size.x / 2., 120.].into(), 
             [1., 1., 1., 1.]
         ),
         ball: None,
         pointer: pointer::Pointer::spawn(), 
-        brick: brick::BrickColumn::spawn(
+        bricks: brick::BrickColumn::spawn(
             6, 
             18, 
             64., 
@@ -56,7 +45,7 @@ impl BreakOutEntities {
         if if let Some(b) = self.ball.as_mut().map(|b| {
             b.refle_edge(disp_size);
             b.refle_paddle(&self.paddle, &mut self.pointer);
-            b.refle_brick(&mut self.brick);
+            b.refle_brick(&mut self.bricks);
             b.moving(state);
             b.update(state);
             b.despawnable()
@@ -64,22 +53,25 @@ impl BreakOutEntities {
             state.remain_ball -= 1;
             self.ball = None 
         }
-        if self.brick.count() == 0 { state.state = super::state::GameState::GameClear }
+        if self.bricks.count() == 0 { state.state = super::state::GameState::GameClear }
         self.paddle.update(disp_size, state, &mut self.ball);
         self.paddle.change_color(state, &self.ball);
     }
-    pub fn input(&mut self, press: bool, key: &VirtualKeyCode) { match key {
-        VirtualKeyCode::A => self.paddle.move_flag.move_left = press, 
-        VirtualKeyCode::D => self.paddle.move_flag.move_right = press, 
-        VirtualKeyCode::Space => self.paddle.move_flag.ball_shot = press, 
-        _ => {},    
-    }}
+    pub fn input(&mut self, keycode: VirtualKeyCode, state: ElementState) {
+        let state = state == ElementState::Pressed;
+        match keycode {
+            VirtualKeyCode::A => self.paddle.move_flag.move_left = state, 
+            VirtualKeyCode::D => self.paddle.move_flag.move_right = state, 
+            VirtualKeyCode::Space => self.paddle.move_flag.ball_shot = state, 
+            _ => {}, 
+        }
+    }
 }
 impl AsInstance for BreakOutEntities {
-    fn as_instance(&self, instances: &mut RawInstArray) {
+    fn as_instance(&self, instances: &mut super::renderer::model::RawInstArray) {
         self.paddle.as_instance(instances);
-        if let Some(ball) = &self.ball { ball.as_instance(instances) };
+        self.bricks.as_instance(instances);
+        if let Some(ball) = self.ball.as_ref() { ball.as_instance(instances) };
         self.pointer.as_instance(instances);
-        self.brick.as_instance(instances);
     }
 }

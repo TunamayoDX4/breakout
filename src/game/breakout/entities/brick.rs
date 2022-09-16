@@ -61,7 +61,7 @@ impl BrickColumn {
     }
 }
 impl super::AsInstance for BrickColumn {
-    fn as_instance(&self, instances: &mut crate::gfx::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
         self.bricks.iter().for_each(|b| b.as_instance(instances))
     }
 }
@@ -121,7 +121,7 @@ impl BrickRow {
     }
 }
 impl super::AsInstance for BrickRow {
-    fn as_instance(&self, instances: &mut crate::gfx::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
         self.bricks.iter()
             .filter_map(|b| b.as_ref())
             .for_each(|b| b.as_instance(instances))
@@ -174,7 +174,7 @@ impl Brick {
     }
 }
 impl super::AsInstance for Brick {
-    fn as_instance(&self, instances: &mut crate::gfx::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
         instances.push(&self.model)
     }
 }

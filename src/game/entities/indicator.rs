@@ -1,5 +1,0 @@
-//! インジケータ
-
-pub struct RemainBulletIndicator {
-    
-}

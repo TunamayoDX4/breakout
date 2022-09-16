@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
 use winit::{event_loop::EventLoop, window::WindowBuilder, event::{Event, WindowEvent, KeyboardInput, VirtualKeyCode}};
 
 /// グラフィクス
 pub mod gfx;
 
-/// ゲーム
+/// ゲーム本体の実装
 pub mod game;
 
 /// コンテキストのスポーン及び実行
@@ -13,11 +15,15 @@ async fn run() -> anyhow::Result<()> {
         .with_resizable(false)
         .with_inner_size(winit::dpi::PhysicalSize::new(640, 640))
         .build(&ev_loop)?;
-    let mut wgpu_ctx = gfx::WGContext::new(&window).await?;
-    let mut game_ctx = game::GameCtx::new(nalgebra::Vector2::new(
-        window.inner_size().width as f32, 
-        window.inner_size().height as f32
-    ));
+    let wgpu_ctx = Arc::new(
+        parking_lot::Mutex::new(gfx::WGContext::new(&window).await?)
+    );
+    let mut game_ctx = game::GameCtx::new(
+        Arc::clone(&wgpu_ctx), 
+        |ctx| {
+            Ok(Box::new(game::breakout::BreakOut::new(ctx)?))
+        }
+    )?;
 
     // イベントをポーリングします。終了した場合はmainには戻らず、ここで終了となります。
     ev_loop.run(move |ev, _, ctl| match ev {
@@ -26,7 +32,7 @@ async fn run() -> anyhow::Result<()> {
             ref event 
         } if window_id == window.id() => match event {
             WindowEvent::CloseRequested => ctl.set_exit(), 
-            WindowEvent::Resized(new_size) => wgpu_ctx.resize(*new_size), 
+            WindowEvent::Resized(new_size) => wgpu_ctx.lock().resize(*new_size), 
             WindowEvent::KeyboardInput { 
                 input: KeyboardInput {
                     state,
@@ -34,41 +40,36 @@ async fn run() -> anyhow::Result<()> {
                     ..
                 }, 
                 .. 
-            } => {
-                let is_pressed = *state == winit::event::ElementState::Pressed;
-                match keycode {
-                    kc @ (
-                        VirtualKeyCode::A
-                        | VirtualKeyCode::D
-                        | VirtualKeyCode::Space
-                    ) => game_ctx.input(
-                        is_pressed, kc
-                    ), 
-                    _ => {}, 
-                }
-            }
+            } => game_ctx.key_input(*keycode, *state), 
             _ => {}, 
         }, 
         Event::RedrawRequested(window_id) if window_id == window.id() => {
             // 再描画処理
-            match wgpu_ctx.rendering(&game_ctx) {
-                Ok(_) => {},
-                Err(wgpu::SurfaceError::Lost) => wgpu_ctx.re_configure(),
+            let rc = match wgpu_ctx.lock().rendering() {
+                Ok(rc) => Some(rc),
+                Err(wgpu::SurfaceError::Lost) => {
+                    wgpu_ctx.lock().re_configure();
+                    None
+                },
                 Err(wgpu::SurfaceError::OutOfMemory) => {
                     log::error!("重大なエラー: レンダリングに必要なVRAM領域が不足しています。");
                     ctl.set_exit();
+                    None
                 }, 
                 Err(e) => {
                     log::error!("描画処理中にエラーが発生しました。内容は以下の通りです。");
                     eprintln!("{e:?}");
+                    None
                 }, 
-            }
+            };
+            if let Some(rc) = rc { game_ctx.rendering(rc) }
         }, 
         Event::MainEventsCleared => {
             // 全てのイベントがクリアされたらゲームの処理及び再描画
-            let size = wgpu_ctx.size();
-            let size = nalgebra::Vector2::<f32>::new(size.width as f32, size.height as f32);
-            game_ctx.update(size);
+            match game_ctx.update().expect("Game context update error") {
+                game::scene::SceneUpdateResult::Updated(_) => {},
+                game::scene::SceneUpdateResult::EmptyScene => ctl.set_exit(),
+            }
             window.request_redraw();
         }, 
         _ => {},  

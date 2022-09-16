@@ -15,7 +15,7 @@ impl Pointer {
     }}
 }
 impl super::AsInstance for Pointer {
-    fn as_instance(&self, instances: &mut crate::gfx::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
         if self.visible { instances.push(&self.model) }
     }
 }

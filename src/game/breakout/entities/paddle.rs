@@ -81,14 +81,14 @@ impl Paddle {
         self.model.color = if ball.is_none() && state.state != super::super::state::GameState::GameOver {
             [1., 0., 0., 1.]
         } else { match state.state {
-            crate::game::state::GameState::Yes => [1., 1., 1., 1.],
-            crate::game::state::GameState::GameOver => [0., 0., 0., 0.],
-            crate::game::state::GameState::GameClear => [0., 0., 1., 0.],
+            super::super::state::GameState::Yes => [1., 1., 1., 1.],
+            super::super::state::GameState::GameOver => [0., 0., 0., 0.],
+            super::super::state::GameState::GameClear => [0., 0., 1., 0.],
         }}
     }
 }
 impl super::AsInstance for Paddle {
-    fn as_instance(&self, instances: &mut crate::gfx::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
         instances.push(&self.model)
     }
 }
