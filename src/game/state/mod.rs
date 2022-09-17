@@ -1,8 +1,13 @@
 //! ゲームの状態
 
+use super::util::text_renderer::{
+    TextRenderer, 
+    TextRendererGMArc, 
+};
+
 pub struct GameState {
-    pub ipaexg: super::util::text_renderer::TextRendererGMArc,  
-    pub ipaexg_: super::util::text_renderer::TextRenderer, 
+    pub ipaexg: TextRendererGMArc,  
+    pub ipaexg_: TextRenderer, 
 }
 impl GameState {
     pub(super) fn new(
@@ -21,16 +26,6 @@ impl GameState {
                     super::util::text_renderer::TextEntry::new(
                         [32., 32.], 
                         vec![
-                            super::util::text_renderer::TextObj {
-                                text: "Hello, wgpu glyph!".into(), 
-                                color: [1., 1., 1., 1.], 
-                                scale: 16., 
-                            }, 
-                            super::util::text_renderer::TextObj {
-                                text: "Hello, wgpu glyph!".into(), 
-                                color: [1., 1., 1., 1.], 
-                                scale: 32., 
-                            }, 
                         ], 
                         wgpu_glyph::Layout::default()
                     )
@@ -40,16 +35,6 @@ impl GameState {
                     super::util::text_renderer::TextEntry::new(
                         [32., 128.], 
                         vec![
-                            super::util::text_renderer::TextObj {
-                                text: "Hello, wgpu glyph!".into(), 
-                                color: [1., 1., 1., 1.], 
-                                scale: 16., 
-                            }, 
-                            super::util::text_renderer::TextObj {
-                                text: "Hello, wgpu glyph!".into(), 
-                                color: [1., 1., 1., 1.], 
-                                scale: 32., 
-                            }, 
                         ], 
                         wgpu_glyph::Layout::default()
                     )

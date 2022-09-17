@@ -1,7 +1,10 @@
 //! ブロック崩し本体の実装
 
 /// レンダラ
-pub mod renderer;
+pub mod obj_renderer;
+
+/// テキストのレンダラ
+pub mod text_renderer;
 
 /// 状態
 pub mod state;
@@ -10,7 +13,7 @@ pub mod state;
 pub mod entities;
 
 pub struct BreakOut {
-    renderer: renderer::BreakOutRenderer, 
+    renderer: obj_renderer::BreakOutRenderer, 
     state: state::BreakOutGameState, 
     entities: entities::BreakOutEntities, 
 }
@@ -18,7 +21,7 @@ impl BreakOut {
     pub fn new(
         gfx_ctx: &crate::gfx::WGContext, 
     ) -> anyhow::Result<Self> {
-        let renderer = renderer::BreakOutRenderer::new(gfx_ctx)?;
+        let renderer = obj_renderer::BreakOutRenderer::new(gfx_ctx)?;
         let state = state::BreakOutGameState::new();
         let entities = entities::BreakOutEntities::new([
             gfx_ctx.size.width as f32, 

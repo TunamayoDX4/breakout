@@ -2,7 +2,7 @@
 
 use winit::event::{VirtualKeyCode, ElementState, MouseButton};
 
-use super::renderer::model::{Instance, AsInstance, RawInstArray};
+use super::obj_renderer::model::{Instance, AsInstance, RawInstArray};
 
 pub mod brick;
 pub mod ball;
@@ -78,7 +78,7 @@ impl BreakOutEntities {
     }
 }
 impl AsInstance for BreakOutEntities {
-    fn as_instance(&self, instances: &mut super::renderer::model::RawInstArray) {
+    fn as_instance(&self, instances: &mut super::obj_renderer::model::RawInstArray) {
         self.paddle.as_instance(instances);
         self.bricks.as_instance(instances);
         if let Some(ball) = self.ball.as_ref() { ball.as_instance(instances) };
