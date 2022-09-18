@@ -4,6 +4,7 @@ use super::super::util::text_renderer::{
 	TextRenderer, 
 	TextRendererGMArc, 
 	entry::{
+		bound::TextBound, 
 		TextEntry, 
 		TextObj, 
 	}, 
@@ -23,6 +24,7 @@ impl BreakOutGameTextRenderer {
 					entries.insert(
 						"top".into(),
 						TextEntry::new(
+							TextBound::DispSize, 
 							[16., 16.], 
 							vec![
 								TextObj::new(
@@ -35,8 +37,38 @@ impl BreakOutGameTextRenderer {
 									16., 
 									[1., 1., 1., 1.], 
 								), 
+								TextObj::new(
+									"", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
 							], 
 							wgpu_glyph::Layout::default()
+						)
+					);
+					entries.insert(
+						"bottom".into(), 
+						TextEntry::new(
+							TextBound::DispSize, 
+							[16., 608.], 
+							vec![
+								TextObj::new(
+									" Escキーで終了 ", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
+								TextObj::new(
+									" ADキー/カーソル移動で移動 ", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
+								TextObj::new(
+									" Spaceキー/左クリックで玉発射 ", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
+							], 
+							wgpu_glyph::Layout::default(), 
 						)
 					);
 					entries

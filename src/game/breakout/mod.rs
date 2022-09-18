@@ -17,6 +17,7 @@ pub struct BreakOut {
     renderer: obj_renderer::BreakOutRenderer, 
     state: state::BreakOutGameState, 
     entities: entities::BreakOutEntities, 
+    to_pause: bool, 
 }
 impl BreakOut {
     pub fn new(
@@ -37,6 +38,7 @@ impl BreakOut {
             state, 
             entities, 
             text, 
+            to_pause: false, 
         })
     }
 }
@@ -47,7 +49,7 @@ impl super::scene::GameScene for BreakOut {
 
     fn update(
         &mut self, 
-        _state: &mut super::state::GameState, 
+        state: &mut super::state::GameState, 
         gfx_ctx: &crate::gfx::WGContext
     ) -> anyhow::Result<super::scene::SceneController> {
         self.entities.update(
@@ -62,9 +64,22 @@ impl super::scene::GameScene for BreakOut {
             entry.text_mut()[1].text = match self.entities.remain_brick() {
                 0 => " ゲームクリア！ ".into(), 
                 remain @ _ => format!(" 残りのブロック: {remain} ").into(), 
-            }
+            };
+            entry.text_mut()[2].text = match self.state.remain_ball {
+                0 => " ゲームオーバー ".into(), 
+                remain @ _ => format!(" 残弾数 : {remain} ").into(), 
+            };
         });
-        Ok(super::scene::SceneController::NOp)
+        if !self.to_pause {
+            Ok(super::scene::SceneController::NOp)
+        } else {
+            self.to_pause = false;
+            Ok(super::scene::SceneController::NewScene(
+                Box::new(super::pause::Pause::new(
+                    state.ipaexg.clone()
+                )?)
+            ))
+        }
     }
 
     fn key_input(
@@ -73,6 +88,9 @@ impl super::scene::GameScene for BreakOut {
         elem_state: winit::event::ElementState
     ) { 
         self.entities.key_input(keycode, elem_state);
+        if keycode == winit::event::VirtualKeyCode::P {
+            self.to_pause = elem_state == winit::event::ElementState::Pressed;
+        }
     }
 
     fn mouse_button_input(&mut self, button: winit::event::MouseButton, elem_state: winit::event::ElementState) {
@@ -80,7 +98,6 @@ impl super::scene::GameScene for BreakOut {
     }
 
     fn mouse_wheel_input(&mut self, _delta: winit::event::MouseScrollDelta) {
-        
     }
 
     fn mouse_motion_input(&mut self, delta: crate::MouseMoveInput) {

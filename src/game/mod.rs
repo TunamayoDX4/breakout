@@ -14,6 +14,9 @@ pub mod scene;
 /// ブロック崩しのメインシステム
 pub mod breakout;
 
+/// ポーズ画面
+pub mod pause;
+
 use winit::event::{VirtualKeyCode, ElementState, MouseButton, MouseScrollDelta};
 pub struct GameCtx {
     gfx_ctx: std::sync::Arc<PMutex<crate::gfx::WGContext>>, 

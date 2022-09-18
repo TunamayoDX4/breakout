@@ -115,12 +115,12 @@ impl crate::gfx::WGRenderer for TextRenderer {
             );
         }
 
-        let bound = nalgebra::Vector2::new(
+        let disp_size = nalgebra::Vector2::new(
             ctx.size.width as f32, ctx.size.height as f32
         );
         self.entries.iter()
             .map(|(_, text)| TextEntrySection {
-                bound,
+                disp_size, 
                 text,
             })
             .map(|section| Section::from(section))
