@@ -6,7 +6,6 @@ use super::super::util::text_renderer::{
 	entry::{
 		TextEntry, 
 		TextObj, 
-		body::TextBody, 
 	}, 
 };
 
@@ -15,24 +14,27 @@ pub struct BreakOutGameTextRenderer {
 }
 impl BreakOutGameTextRenderer {
 	pub fn new(
-		gfx_ctx: &crate::gfx::WGContext, 
 		glyph: TextRendererGMArc, 
 	) -> anyhow::Result<Self> { 
 		Ok(Self {
 			renderer: TextRenderer::new(
-				gfx_ctx, 
 				Some({
 					let mut entries = hashbrown::HashMap::new();
 					entries.insert(
-						"".into(),
+						"top".into(),
 						TextEntry::new(
-							[32., 32.], 
+							[16., 16.], 
 							vec![
-								TextObj {
-									text: TextBody::from_direct("".into()), 
-									color: [1., 1., 1., 1.], 
-									scale: 32., 
-								}
+								TextObj::new(
+									" BreakOut ブロック崩し ", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
+								TextObj::new(
+									"", 
+									16., 
+									[1., 1., 1., 1.], 
+								), 
 							], 
 							wgpu_glyph::Layout::default()
 						)

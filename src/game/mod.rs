@@ -24,18 +24,21 @@ pub struct GameCtx {
 impl GameCtx {
     pub fn new(
         gfx_ctx: std::sync::Arc<PMutex<crate::gfx::WGContext>>, 
-        mut default_scene: impl FnMut(& crate::gfx::WGContext) -> anyhow::Result<
+        mut default_scene: impl FnMut(
+            &crate::gfx::WGContext, 
+            &mut state::GameState
+        ) -> anyhow::Result<
             Box<dyn scene::GameScene>
         >, 
     ) -> anyhow::Result<Self> { 
         let (scenes, state) = {
             let gfx_ctx_lock = gfx_ctx.lock();
-            let scenes = scene::SceneCollector::new(
-                default_scene(&gfx_ctx_lock)?
-            );
-            let state = state::GameState::new(
+            let mut state = state::GameState::new(
                 &gfx_ctx_lock
             )?;
+            let scenes = scene::SceneCollector::new(
+                default_scene(&gfx_ctx_lock, &mut state)?
+            );
             (scenes, state)
         };
         Ok(Self {

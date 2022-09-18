@@ -76,6 +76,9 @@ impl BreakOutEntities {
     pub fn mouse_motion_input(&mut self, input: crate::MouseMoveInput) {
         self.paddle.move_flag.move_delta = input.0.x;
     }
+    pub fn remain_brick(&self) -> usize {
+        self.bricks.count()
+    }
 }
 impl AsInstance for BreakOutEntities {
     fn as_instance(&self, instances: &mut super::obj_renderer::model::RawInstArray) {

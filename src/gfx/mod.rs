@@ -77,11 +77,6 @@ impl WGContext {
         self.surface.configure(&self.device, &self.config);
     }
 
-    /// 画面サイズの取得
-    pub(super) fn size(&self) -> winit::dpi::PhysicalSize<u32> {
-        self.size
-    }
-
     /// 描画処理
     pub(super) fn rendering(
         &self, 

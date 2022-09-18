@@ -13,9 +13,20 @@ pub struct TextObj {
     pub scale: f32, 
     pub color: [f32; 4], 
 }
-impl<'a> From<&'a mut TextObj> for Text<'a> {
-    fn from(value: &'a mut TextObj) -> Self {
-        Text::new(<&str>::from(&mut value.text))
+impl TextObj {
+    pub fn new<B: Into<body::TextBody>> (
+        text: B, 
+        scale: f32, 
+        color: [f32; 4], 
+    ) -> Self { Self {
+        text: text.into(), 
+        scale, 
+        color, 
+    } }
+}
+impl<'a> From<&'a TextObj> for Text<'a> {
+    fn from(value: &'a TextObj) -> Self {
+        Text::new((&value.text).into())
             .with_scale(value.scale)
             .with_color(value.color)
     }
@@ -49,15 +60,17 @@ impl TextEntry {
 /// 描画するテキストの一時構造体
 pub(super) struct TextEntrySection<'a> {
     pub bound: nalgebra::Vector2<f32>, 
-    pub text: &'a mut TextEntry, 
+    pub text: &'a TextEntry, 
 }
 impl<'a> From<TextEntrySection<'a>> for Section<'a> {
-    fn from(value: TextEntrySection<'a>) -> Self { Section {
-        screen_position: (value.text.position.x, value.text.position.y),
-        bounds: (value.bound.x, value.bound.y),
-        text: value.text.text.iter_mut()
-            .map(|t| Text::from(t))
-            .collect(),
-        layout: value.text.layout
-    }}
+    fn from(value: TextEntrySection<'a>) -> Self { 
+        Section {
+            screen_position: (value.text.position.x, value.text.position.y),
+            bounds: (value.bound.x, value.bound.y),
+            text: value.text.text.iter()
+                .map(|t| Text::from(t))
+                .collect(),
+            layout: value.text.layout
+        }
+    }
 }

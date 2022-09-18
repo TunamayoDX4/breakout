@@ -5,6 +5,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+strip = "debuginfo"
+
+[profile.dev]
+opt-level = 1
+
 [dependencies]
 # エラーハンドル
 anyhow = "1.0"

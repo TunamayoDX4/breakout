@@ -45,14 +45,18 @@ async fn run() -> anyhow::Result<()> {
     let window = WindowBuilder::new()
         .with_resizable(false)
         .with_inner_size(winit::dpi::PhysicalSize::new(640, 640))
+        .with_title("BreakOut ～ブロック崩し～")
         .build(&ev_loop)?;
     let wgpu_ctx = Arc::new(
         parking_lot::Mutex::new(gfx::WGContext::new(&window).await?)
     );
     let mut game_ctx = game::GameCtx::new(
         Arc::clone(&wgpu_ctx), 
-        |ctx| {
-            Ok(Box::new(game::breakout::BreakOut::new(ctx)?))
+        |ctx, state| {
+            Ok(Box::new(game::breakout::BreakOut::new(
+                ctx, 
+                state.ipaexg.clone()
+            )?))
         }
     )?;
     let mut mouse_buffer = MouseMoveBuffer::new();

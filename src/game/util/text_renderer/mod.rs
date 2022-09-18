@@ -5,12 +5,12 @@
 use std::sync::Arc;
 
 use hashbrown::HashMap;
-use wgpu_glyph::{Section, Text, Layout, BuiltInLineBreaker};
+use wgpu_glyph::Section;
 type PMutex<T> = parking_lot::Mutex<T>;
 
 /// テキストのエントリ
 pub mod entry;
-pub use entry::{TextObj, TextEntry};
+pub use entry::{TextObj, TextEntry, body::TextBody};
 use entry::TextEntrySection;
 
 /// テキストのレンダラのフォントモジュール
@@ -56,7 +56,6 @@ pub struct TextRenderer {
 }
 impl TextRenderer {
     pub fn new(
-        gfx_ctx: &crate::gfx::WGContext, 
         entries: Option<HashMap<std::borrow::Cow<'static, str>, TextEntry>>, 
         glyph:  TextRendererGMArc , 
     ) -> anyhow::Result<Self> { 
@@ -87,7 +86,7 @@ impl TextRenderer {
 impl crate::gfx::WGRenderer for TextRenderer {
     fn rendering(
         &mut self, 
-        output: &wgpu::SurfaceTexture, 
+        _output: &wgpu::SurfaceTexture, 
         view: &wgpu::TextureView, 
         ctx: &crate::gfx::WGContext, 
     ) {
@@ -119,7 +118,7 @@ impl crate::gfx::WGRenderer for TextRenderer {
         let bound = nalgebra::Vector2::new(
             ctx.size.width as f32, ctx.size.height as f32
         );
-        self.entries.iter_mut()
+        self.entries.iter()
             .map(|(_, text)| TextEntrySection {
                 bound,
                 text,

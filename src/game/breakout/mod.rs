@@ -13,6 +13,7 @@ pub mod state;
 pub mod entities;
 
 pub struct BreakOut {
+    text: text_renderer::BreakOutGameTextRenderer, 
     renderer: obj_renderer::BreakOutRenderer, 
     state: state::BreakOutGameState, 
     entities: entities::BreakOutEntities, 
@@ -20,6 +21,7 @@ pub struct BreakOut {
 impl BreakOut {
     pub fn new(
         gfx_ctx: &crate::gfx::WGContext, 
+        text_glyph: super::util::text_renderer::TextRendererGMArc, 
     ) -> anyhow::Result<Self> {
         let renderer = obj_renderer::BreakOutRenderer::new(gfx_ctx)?;
         let state = state::BreakOutGameState::new();
@@ -27,10 +29,14 @@ impl BreakOut {
             gfx_ctx.size.width as f32, 
             gfx_ctx.size.height as f32, 
         ].into());
+        let text = text_renderer::BreakOutGameTextRenderer::new(
+            text_glyph
+        )?;
         Ok(Self {
             renderer, 
             state, 
             entities, 
+            text, 
         })
     }
 }
@@ -41,7 +47,7 @@ impl super::scene::GameScene for BreakOut {
 
     fn update(
         &mut self, 
-        state: &mut super::state::GameState, 
+        _state: &mut super::state::GameState, 
         gfx_ctx: &crate::gfx::WGContext
     ) -> anyhow::Result<super::scene::SceneController> {
         self.entities.update(
@@ -52,6 +58,12 @@ impl super::scene::GameScene for BreakOut {
             &mut self.state
         );
         self.renderer.update(&self.entities);
+        self.text.entry_mut("top").map(|entry| {
+            entry.text_mut()[1].text = match self.entities.remain_brick() {
+                0 => " ゲームクリア！ ".into(), 
+                remain @ _ => format!(" 残りのブロック: {remain} ").into(), 
+            }
+        });
         Ok(super::scene::SceneController::NOp)
     }
 
@@ -67,7 +79,7 @@ impl super::scene::GameScene for BreakOut {
         self.entities.mouse_input(button, elem_state);
     }
 
-    fn mouse_wheel_input(&mut self, delta: winit::event::MouseScrollDelta) {
+    fn mouse_wheel_input(&mut self, _delta: winit::event::MouseScrollDelta) {
         
     }
 
@@ -77,13 +89,13 @@ impl super::scene::GameScene for BreakOut {
 
     fn rendering(
         &mut self, 
-        state: &mut super::state::GameState, 
+        _state: &mut super::state::GameState, 
         gfx_ctx: &crate::gfx::WGContext, 
         rendering_chain: crate::gfx::RenderingChain
     ) -> crate::gfx::RenderingChain {
         let r: [&mut dyn crate::gfx::WGRenderer; 2] = [
             &mut self.renderer, 
-            &mut state.ipaexg_, 
+            &mut self.text, 
         ];
         rendering_chain.rendering(gfx_ctx, r)
     }
