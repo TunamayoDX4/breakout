@@ -41,19 +41,21 @@ impl BreakOutEntities {
         &mut self, 
         disp_size: nalgebra::Vector2<f32>, 
         state: &mut super::state::BreakOutGameState, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) {
         if if let Some(b) = self.ball.as_mut().map(|b| {
-            b.refle_edge(disp_size);
-            b.refle_paddle(&self.paddle, &mut self.pointer);
+            b.refle_edge(disp_size, sfx_ctx);
+            b.refle_paddle(&self.paddle, &mut self.pointer, sfx_ctx);
             b.refle_brick(
                 &mut self.bricks, 
                 |brick| {
                     *state.score.lock() += (brick.score / 5) * state.remain_ball as u64;
-                }
+                }, 
+                sfx_ctx, 
             );
             b.moving(state);
             b.update(state);
-            b.despawnable()
+            b.despawnable(sfx_ctx)
         }) { b } else { false } { 
             state.remain_ball -= 1;
             self.ball = None 

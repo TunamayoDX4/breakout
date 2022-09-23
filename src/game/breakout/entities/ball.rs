@@ -36,7 +36,11 @@ impl Ball {
             _ => {}
         }
     }
-    pub fn refle_edge(&mut self, disp_size: nalgebra::Vector2<f32>) {
+    pub fn refle_edge(
+        &mut self, 
+        disp_size: nalgebra::Vector2<f32>, 
+        sfx_ctx: &crate::sfx::SfxModule
+    ) {
         let wvx = if disp_size.x <= self.model.position.x {
             Some(nalgebra::Vector2::new(-1., 0.))
         } else if self.model.position.x <= 0. {
@@ -57,11 +61,13 @@ impl Ball {
         };
         let d = -self.angle.dot(&wv);
         self.angle += (d * wv) * 2.;
+        sfx_ctx.play_resource("reflection", |r| r);
     }
     pub fn refle_paddle(
         &mut self, 
         paddle: &super::paddle::Paddle, 
         pointer: &mut super::pointer::Pointer, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) {
         let a = &self.model.position;
         let b = self.model.position + self.angle * self.speed;
@@ -107,12 +113,14 @@ impl Ball {
             )
                 .normalize();
             self.angle = nv;
+            sfx_ctx.play_resource("reflection", |r| r);
         }
     }
     pub fn refle_brick(
         &mut self, 
         brick: &mut super::brick::BrickColumn, 
         f: impl FnMut(&super::brick::Brick) + Clone, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) {
         let rv = brick.collision(self, f)
             .map(|r| match r {
@@ -122,11 +130,20 @@ impl Ball {
                 super::brick::BBCollisionPoint::Right => nalgebra::Vector2::new(1., 0.),
             });
         if let Some(rv) = rv {
+            sfx_ctx.play_resource("break", |r|r);
             let d = -self.angle.dot(&rv);
             self.angle += (d * rv) * 2.;
         }
     }
-    pub fn despawnable(&mut self) -> bool { self.model.position.y.is_sign_negative() }
+    pub fn despawnable(&mut self, sfx_ctx: &crate::sfx::SfxModule) -> bool { 
+        match self.model.position.y.is_sign_negative() {
+            a @ true => {
+                sfx_ctx.play_resource("miss", |r| r);
+                a
+            },
+            f @ _ => f,
+        }
+    }
 }
 impl super::AsInstance for Ball {
     fn as_instance(&self, instances: &mut super::RawInstArray) {

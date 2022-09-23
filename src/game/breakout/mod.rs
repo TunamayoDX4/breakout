@@ -60,7 +60,8 @@ impl super::scene::GameScene for BreakOut {
                 gfx_ctx.size.width as f32, 
                 gfx_ctx.size.height as f32, 
             ].into(), 
-            &mut self.state
+            &mut self.state, 
+            sfx_ctx
         );
         self.renderer.update(&self.entities);
         self.text.entry_mut("top").map(|entry| {
@@ -78,10 +79,7 @@ impl super::scene::GameScene for BreakOut {
             Ok(super::scene::SceneController::NOp)
         } else {
             self.to_pause = false;
-            sfx_ctx.add(
-                rodio::source::SineWave::new(300.)
-                    .take_duration(std::time::Duration::from_millis(125))
-            );
+            sfx_ctx.play_resource("pause", |r| r);
             Ok(super::scene::SceneController::NewScene(
                 Box::new(super::pause::Pause::new(
                     state.ipaexg.clone()

@@ -29,9 +29,10 @@ impl super::scene::GameScene for Pause {
         &mut self, 
         _state: &mut super::state::GameState, 
         _gfx_ctx: &crate::gfx::WGContext, 
-        _sfx_ctx: &crate::sfx::SfxModule, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) -> anyhow::Result<super::scene::SceneController> {
         if self.returned {
+            sfx_ctx.play_resource("pause", |r| r);
             Ok(super::scene::SceneController::PopScene)
         } else {
             Ok(super::scene::SceneController::NOp)

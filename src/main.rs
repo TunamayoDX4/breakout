@@ -54,7 +54,31 @@ async fn run() -> anyhow::Result<()> {
         parking_lot::Mutex::new(gfx::WGContext::new(&window).await?)
     );
 
-    let sfx_ctx = sfx::SfxModule::new(0.025)?;
+    let mut sfx_ctx = sfx::SfxModule::new(0.25)?;
+    sfx_ctx.add_resource(
+        "pause", 
+        rodio::Decoder::new_mp3(
+            std::fs::File::open("./se/pause.mp3")?
+        )?
+    );
+    sfx_ctx.add_resource(
+        "break", 
+        rodio::Decoder::new_mp3(
+            std::fs::File::open("./se/break.mp3")?
+        )?
+    );
+    sfx_ctx.add_resource(
+        "miss", 
+        rodio::Decoder::new_mp3(
+            std::fs::File::open("./se/miss.mp3")?
+        )?    
+    );
+    sfx_ctx.add_resource(
+        "reflection", 
+        rodio::Decoder::new_mp3(
+            std::fs::File::open("./se/reflection.mp3")?
+        )?    
+    );
 
     let mut game_ctx = game::GameCtx::new(
         Arc::clone(&wgpu_ctx), 
