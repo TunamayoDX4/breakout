@@ -8,7 +8,8 @@ pub trait GameScene {
     fn update(
         &mut self, 
         state: &mut super::state::GameState, 
-        gfx_ctx: &crate::gfx::WGContext
+        gfx_ctx: &crate::gfx::WGContext, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) -> anyhow::Result<SceneController>;
     fn key_input(&mut self, keycode: VirtualKeyCode, elem_state: ElementState);
     fn mouse_button_input(&mut self, button: MouseButton, elem_state: ElementState);
@@ -53,10 +54,15 @@ impl SceneCollector {
     pub fn update(
         &mut self, 
         state: &mut super::state::GameState, 
-        gfx_ctx: &crate::gfx::WGContext
+        gfx_ctx: &crate::gfx::WGContext, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) -> anyhow::Result<SceneUpdateResult> {
         match self.0.back_mut() {
-            Some(back) => Some(back.update(state, gfx_ctx)?),
+            Some(back) => Some(back.update(
+                state, 
+                gfx_ctx, 
+                sfx_ctx
+            )?),
             None => None,
         }.map_or_else(
             || Ok(SceneUpdateResult::EmptyScene), 

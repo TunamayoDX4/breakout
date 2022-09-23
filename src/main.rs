@@ -14,6 +14,9 @@ use winit::{
 /// グラフィクス
 pub mod gfx;
 
+/// サウンドエフェクト
+pub mod sfx;
+
 /// ゲーム本体の実装
 pub mod game;
 
@@ -50,6 +53,9 @@ async fn run() -> anyhow::Result<()> {
     let wgpu_ctx = Arc::new(
         parking_lot::Mutex::new(gfx::WGContext::new(&window).await?)
     );
+
+    let sfx_ctx = sfx::SfxModule::new(0.025)?;
+
     let mut game_ctx = game::GameCtx::new(
         Arc::clone(&wgpu_ctx), 
         |ctx, state| {
@@ -60,6 +66,7 @@ async fn run() -> anyhow::Result<()> {
         }
     )?;
     let mut mouse_buffer = MouseMoveBuffer::new();
+
 
     // イベントをポーリングします。終了した場合はmainには戻らず、ここで終了となります。
     ev_loop.run(move |ev, _, ctl| match ev {
@@ -124,7 +131,7 @@ async fn run() -> anyhow::Result<()> {
             game_ctx.mouse_motion_input(input);
 
             // ゲームの処理
-            match game_ctx.update().expect("Game context update error") {
+            match game_ctx.update(&sfx_ctx).expect("Game context update error") {
                 game::scene::SceneUpdateResult::Updated(_) => {},
                 game::scene::SceneUpdateResult::EmptyScene => ctl.set_exit(),
             };

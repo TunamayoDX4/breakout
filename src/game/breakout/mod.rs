@@ -1,5 +1,7 @@
 //! ブロック崩し本体の実装
 
+use rodio::Source;
+
 /// レンダラ
 pub mod obj_renderer;
 
@@ -50,7 +52,8 @@ impl super::scene::GameScene for BreakOut {
     fn update(
         &mut self, 
         state: &mut super::state::GameState, 
-        gfx_ctx: &crate::gfx::WGContext
+        gfx_ctx: &crate::gfx::WGContext, 
+        sfx_ctx: &crate::sfx::SfxModule, 
     ) -> anyhow::Result<super::scene::SceneController> {
         self.entities.update(
             [
@@ -75,6 +78,10 @@ impl super::scene::GameScene for BreakOut {
             Ok(super::scene::SceneController::NOp)
         } else {
             self.to_pause = false;
+            sfx_ctx.add(
+                rodio::source::SineWave::new(300.)
+                    .take_duration(std::time::Duration::from_millis(125))
+            );
             Ok(super::scene::SceneController::NewScene(
                 Box::new(super::pause::Pause::new(
                     state.ipaexg.clone()

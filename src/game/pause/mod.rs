@@ -28,7 +28,8 @@ impl super::scene::GameScene for Pause {
     fn update(
         &mut self, 
         _state: &mut super::state::GameState, 
-        _gfx_ctx: &crate::gfx::WGContext
+        _gfx_ctx: &crate::gfx::WGContext, 
+        _sfx_ctx: &crate::sfx::SfxModule, 
     ) -> anyhow::Result<super::scene::SceneController> {
         if self.returned {
             Ok(super::scene::SceneController::PopScene)

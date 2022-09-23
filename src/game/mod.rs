@@ -51,11 +51,15 @@ impl GameCtx {
             exit: false, 
         })
     }
-    pub fn update(&mut self) -> anyhow::Result<scene::SceneUpdateResult> {
+    pub fn update(
+        &mut self, 
+        sfx_ctx: &crate::sfx::SfxModule, 
+    ) -> anyhow::Result<scene::SceneUpdateResult> {
         if self.exit { self.scenes.flush_all() }
         self.scenes.update(
             &mut self.state, 
-            &self.gfx_ctx.lock()
+            &self.gfx_ctx.lock(), 
+            sfx_ctx, 
         )
     }
     pub fn key_input(&mut self, keycode: VirtualKeyCode, elem_state: ElementState) {
