@@ -44,9 +44,13 @@ impl BrickColumn {
 
         Self { bricks }
     }
-    pub fn collision(&mut self, ball: &super::ball::Ball) -> Option<BBCollisionPoint> {
+    pub fn collision(
+        &mut self, 
+        ball: &super::ball::Ball, 
+        f: impl FnMut(&Brick) + Clone, 
+    ) -> Option<BBCollisionPoint> {
         for b in self.bricks.iter_mut()
-            .map(|b| b.collision(ball))
+            .map(|b| b.collision(ball, f.clone()))
         {
             if let Some(r) = b { return Some(r) }
         }
@@ -104,7 +108,11 @@ impl BrickRow {
             count, 
         }
     }
-    pub fn collision(&mut self, ball: &super::ball::Ball) -> Option<BBCollisionPoint> {
+    pub fn collision(
+        &mut self, 
+        ball: &super::ball::Ball, 
+        mut f: impl FnMut(&Brick), 
+    ) -> Option<BBCollisionPoint> {
         for b in self.bricks.iter_mut()
         {
             if let Some(rb) = if let Some(rb) = b {
@@ -112,6 +120,7 @@ impl BrickRow {
             } else {
                 None
             } {
+                if let Some(b) = b { f(b) }
                 self.count -= 1;
                 *b = None;
                 return Some(rb)
@@ -131,19 +140,22 @@ impl super::AsInstance for BrickRow {
 /// ブロック
 pub struct Brick {
     model: super::Instance, 
+    pub score: u64, 
 }
 impl Brick {
     pub fn spawn(
         position: nalgebra::Point2<f32>, 
         size: nalgebra::Vector2<f32>, 
         color: [f32; 4], 
+        score: u64, 
     ) -> Self { Self { 
         model: super::Instance {
             position,
             size,
             angle: 0.,
             color,
-        }
+        }, 
+        score, 
     } }
     pub fn collision(
         &self, 
@@ -172,6 +184,7 @@ impl Brick {
             None
         }
     }
+    pub fn hit(&self, mut f: impl FnMut(&Self)) { f(self) }
 }
 impl super::AsInstance for Brick {
     fn as_instance(&self, instances: &mut super::RawInstArray) {
@@ -195,7 +208,8 @@ pub(super) fn brick_spawner(
                 pos[0] as f32 * (1. / 18.), 
                 pos[1] as f32 * (1. / 18.), 
                 1.
-            ]
+            ], 
+            100 * pos[1] as u64, 
         ))
     }
 }

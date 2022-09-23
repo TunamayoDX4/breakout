@@ -69,6 +69,7 @@ impl super::scene::GameScene for BreakOut {
                 0 => " ゲームオーバー ".into(), 
                 remain @ _ => format!(" 残弾数 : {remain} ").into(), 
             };
+            entry.text_mut()[3].text = format!(" スコア : {0} ", *self.state.score.lock()).into()
         });
         if !self.to_pause {
             Ok(super::scene::SceneController::NOp)

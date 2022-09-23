@@ -109,8 +109,12 @@ impl Ball {
             self.angle = nv;
         }
     }
-    pub fn refle_brick(&mut self, brick: &mut super::brick::BrickColumn) {
-        let rv = brick.collision(self)
+    pub fn refle_brick(
+        &mut self, 
+        brick: &mut super::brick::BrickColumn, 
+        f: impl FnMut(&super::brick::Brick) + Clone, 
+    ) {
+        let rv = brick.collision(self, f)
             .map(|r| match r {
                 super::brick::BBCollisionPoint::Top => nalgebra::Vector2::new(0., 1.),
                 super::brick::BBCollisionPoint::Bottom => nalgebra::Vector2::new(0., -1.),

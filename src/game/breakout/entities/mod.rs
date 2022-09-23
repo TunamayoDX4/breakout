@@ -45,7 +45,12 @@ impl BreakOutEntities {
         if if let Some(b) = self.ball.as_mut().map(|b| {
             b.refle_edge(disp_size);
             b.refle_paddle(&self.paddle, &mut self.pointer);
-            b.refle_brick(&mut self.bricks);
+            b.refle_brick(
+                &mut self.bricks, 
+                |brick| {
+                    *state.score.lock() += (brick.score / 5) * state.remain_ball as u64;
+                }
+            );
             b.moving(state);
             b.update(state);
             b.despawnable()

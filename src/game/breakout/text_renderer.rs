@@ -42,6 +42,11 @@ impl BreakOutGameTextRenderer {
 									16., 
 									[1., 1., 1., 1.], 
 								), 
+								TextObj::new(
+									"", 
+									16., 
+									[1., 1., 1., 1.], 
+								)
 							], 
 							wgpu_glyph::Layout::default()
 						)
