@@ -88,11 +88,11 @@ async fn run() -> anyhow::Result<()> {
                 ctx, 
                 state.ipaexg.clone(), 
                 game::breakout::entities::brick::BrickSpawnParam {
-                    column: 32,
-                    row: 56,
+                    column: 12,
+                    row: 24,
                     margin_top: 32.,
                     brick_margin: [2., 2.],
-                    brick_size: [8., 4.],
+                    brick_size: [24., 12.],
                     spawn_f: Arc::new(Mutex::new(|
                         pos: [u32; 2], 
                         blk_pos, 
