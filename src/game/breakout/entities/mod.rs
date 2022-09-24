@@ -10,32 +10,31 @@ pub mod paddle;
 pub mod pointer;
 
 pub struct BreakOutEntities {
-    bricks: brick::BrickColumn, 
+    bricks: brick::BrickCollection, 
     ball: Option<ball::Ball>, 
     paddle: paddle::Paddle, 
     pointer: pointer::Pointer, 
 }
 impl BreakOutEntities {
-    pub fn new(
+    pub fn new<BM, BS, SF>(
+        brick_param: brick::BrickSpawnParam<BM, BS, SF>, 
         disp_size: nalgebra::Vector2<f32>, 
-    )-> Self { Self {
+    )-> Self where
+        BM: Into<nalgebra::Vector2<f32>>, 
+        BS: Into<nalgebra::Vector2<f32>>, 
+        SF: FnMut(
+            [u32; 2], 
+            nalgebra::Point2<f32>, 
+            nalgebra::Vector2<f32>
+        ) -> Option<brick::Brick>, 
+    { Self {
         paddle: paddle::Paddle::spawn(
             [disp_size.x / 2., 120.].into(), 
             [1., 1., 1., 1.]
         ),
         ball: None,
         pointer: pointer::Pointer::spawn(), 
-        bricks: brick::BrickColumn::spawn(
-            6, 
-            18, 
-            64., 
-            [2., 16.].into(), 
-            [32., 16.].into(), 
-            disp_size, 
-            std::sync::Arc::new(
-                parking_lot::Mutex::new(brick::brick_spawner)
-            )
-        )
+        bricks: brick::BrickCollection::spawn(disp_size, brick_param), 
     }}
     pub fn update(
         &mut self, 
@@ -47,7 +46,7 @@ impl BreakOutEntities {
             b.refle_edge(disp_size, sfx_ctx);
             b.refle_paddle(&self.paddle, &mut self.pointer, sfx_ctx);
             b.refle_brick(
-                &mut self.bricks, 
+                self.bricks.get_mut(), 
                 |brick| {
                     *state.score.lock() += (brick.score / 5) * state.remain_ball as u64;
                 }, 
@@ -60,7 +59,7 @@ impl BreakOutEntities {
             state.remain_ball -= 1;
             self.ball = None 
         }
-        if self.bricks.count() == 0 { state.state = super::state::GameState::GameClear }
+        if self.bricks.get().count() == 0 { state.state = super::state::GameState::GameClear }
         self.paddle.update(disp_size, state, &mut self.ball);
         self.paddle.change_color(state, &self.ball);
     }
@@ -84,7 +83,7 @@ impl BreakOutEntities {
         self.paddle.move_flag.move_delta = input.0.x;
     }
     pub fn remain_brick(&self) -> usize {
-        self.bricks.count()
+        self.bricks.get().count()
     }
 }
 impl AsInstance for BreakOutEntities {

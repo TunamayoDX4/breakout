@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use parking_lot::Mutex;
 use winit::{
     event_loop::EventLoop, 
     window::WindowBuilder, 
@@ -85,7 +86,35 @@ async fn run() -> anyhow::Result<()> {
         |ctx, state| {
             Ok(Box::new(game::breakout::BreakOut::new(
                 ctx, 
-                state.ipaexg.clone()
+                state.ipaexg.clone(), 
+                game::breakout::entities::brick::BrickSpawnParam {
+                    column: 32,
+                    row: 56,
+                    margin_top: 32.,
+                    brick_margin: [2., 2.],
+                    brick_size: [8., 4.],
+                    spawn_f: Arc::new(Mutex::new(|
+                        pos: [u32; 2], 
+                        blk_pos, 
+                        blk_size, 
+                    | {
+                        if pos[1] % 3 == 0 {
+                            None
+                        } else {
+                            Some(game::breakout::entities::brick::Brick::spawn(
+                                blk_pos, 
+                                blk_size, 
+                                [
+                                    1. - pos[1] as f32 * (1. / 18.), 
+                                    pos[0] as f32 * (1. / 18.), 
+                                    pos[1] as f32 * (1. / 18.), 
+                                    1.
+                                ], 
+                                100 * pos[1] as u64, 
+                            ))
+                        }
+                    })),
+                }, 
             )?))
         }
     )?;

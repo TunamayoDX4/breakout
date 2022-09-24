@@ -25,13 +25,25 @@ impl BreakOut {
     pub fn new(
         gfx_ctx: &crate::gfx::WGContext, 
         text_glyph: super::util::text_renderer::TextRendererGMArc, 
+        brick_param: entities::brick::BrickSpawnParam<
+            impl Into<nalgebra::Vector2<f32>>, 
+            impl Into<nalgebra::Vector2<f32>>, 
+            impl FnMut(
+                [u32; 2], 
+                nalgebra::Point2<f32>, 
+                nalgebra::Vector2<f32>
+            ) -> Option<entities::brick::Brick>
+        >
     ) -> anyhow::Result<Self> {
         let renderer = obj_renderer::BreakOutRenderer::new(gfx_ctx)?;
         let state = state::BreakOutGameState::new();
-        let entities = entities::BreakOutEntities::new([
-            gfx_ctx.size.width as f32, 
-            gfx_ctx.size.height as f32, 
-        ].into());
+        let entities = entities::BreakOutEntities::new(
+            brick_param, 
+            [
+                gfx_ctx.size.width as f32, 
+                gfx_ctx.size.height as f32, 
+            ].into()
+        );
         let text = text_renderer::BreakOutGameTextRenderer::new(
             text_glyph
         )?;

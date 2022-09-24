@@ -1,6 +1,12 @@
 type PMutex<T> = parking_lot::Mutex<T>;
 use std::sync::Arc;
 
+use super::{Instance, AsInstance};
+
+/// ブロックそのものの実装
+pub mod brick;
+pub use brick::Brick;
+
 /// ブロックとボールのだいたいの接触位置
 pub enum BBCollisionPoint {
     Top, 
@@ -9,6 +15,41 @@ pub enum BBCollisionPoint {
     Right, 
 }
 
+/// ブロック配列のラップ型
+pub struct BrickCollection(BrickColumn);
+impl BrickCollection {
+    pub fn spawn<BM, BS, SF>(
+        disp_size: nalgebra::Vector2<f32>, 
+        param: BrickSpawnParam<BM, BS, SF>, 
+    ) -> Self where
+        BM: Into<nalgebra::Vector2<f32>>, 
+        BS: Into<nalgebra::Vector2<f32>>, 
+        SF: FnMut(
+            [u32; 2], 
+            nalgebra::Point2<f32>, 
+            nalgebra::Vector2<f32>
+        ) -> Option<Brick>, 
+    {
+        Self(BrickColumn::spawn(
+            param.column, 
+            param.row, 
+            param.margin_top, 
+            param.brick_margin.into(), 
+            param.brick_size.into(), 
+            disp_size, 
+            param.spawn_f, 
+        ))
+    }
+    pub fn get(&self) -> &BrickColumn { &self.0 }
+    pub fn get_mut(&mut self) -> &mut BrickColumn { &mut self.0 }
+}
+impl super::AsInstance for BrickCollection {
+    fn as_instance(&self, instances: &mut super::RawInstArray) {
+        self.0.as_instance(instances)
+    }
+}
+
+/// ブロックの行
 pub struct BrickColumn {
     bricks: Vec<BrickRow>, 
 }
@@ -137,61 +178,6 @@ impl super::AsInstance for BrickRow {
     }
 }
 
-/// ブロック
-pub struct Brick {
-    model: super::Instance, 
-    pub score: u64, 
-}
-impl Brick {
-    pub fn spawn(
-        position: nalgebra::Point2<f32>, 
-        size: nalgebra::Vector2<f32>, 
-        color: [f32; 4], 
-        score: u64, 
-    ) -> Self { Self { 
-        model: super::Instance {
-            position,
-            size,
-            angle: 0.,
-            color,
-        }, 
-        score, 
-    } }
-    pub fn collision(
-        &self, 
-        ball: &super::ball::Ball
-    ) -> Option<BBCollisionPoint> {
-        if self.model.collision_aabb(&ball.model) {
-            let bb_length = (
-                self.model.position - ball.model.position
-            ).normalize();
-            let aspect = self.model.size.x / self.model.size.y;
-            match (
-                bb_length.x.abs() / bb_length.y.abs() < aspect, 
-                bb_length.x.is_sign_positive(), 
-                bb_length.y.is_sign_positive()
-            ) {
-                (true, true, true) => Some(BBCollisionPoint::Top),
-                (true, true, false) => Some(BBCollisionPoint::Bottom),
-                (true, false, true) => Some(BBCollisionPoint::Top),
-                (true, false, false) => Some(BBCollisionPoint::Bottom),
-                (false, true, true) => Some(BBCollisionPoint::Right),
-                (false, true, false) => Some(BBCollisionPoint::Right),
-                (false, false, true) => Some(BBCollisionPoint::Left),
-                (false, false, false) => Some(BBCollisionPoint::Left),
-            }
-        } else {
-            None
-        }
-    }
-    pub fn hit(&self, mut f: impl FnMut(&Self)) { f(self) }
-}
-impl super::AsInstance for Brick {
-    fn as_instance(&self, instances: &mut super::RawInstArray) {
-        instances.push(&self.model)
-    }
-}
-
 pub(super) fn brick_spawner(
     pos: [u32; 2], 
     blkpos: nalgebra::Point2<f32>, 
@@ -212,4 +198,22 @@ pub(super) fn brick_spawner(
             100 * pos[1] as u64, 
         ))
     }
+}
+
+/// ブロックのスポーン時に引き渡す値
+pub struct BrickSpawnParam<
+    BM: Into<nalgebra::Vector2<f32>>, 
+    BS: Into<nalgebra::Vector2<f32>>, 
+    SF: FnMut(
+        [u32; 2], 
+        nalgebra::Point2<f32>, 
+        nalgebra::Vector2<f32>
+    ) -> Option<Brick>, 
+> {
+    pub column: u32, 
+    pub row: u32, 
+    pub margin_top: f32, 
+    pub brick_margin: BM, 
+    pub brick_size: BS, 
+    pub spawn_f: Arc<parking_lot::Mutex<SF>>, 
 }
