@@ -16,11 +16,11 @@ pub enum BBCollisionPoint {
 }
 
 /// ブロック配列のラップ型
-pub struct BrickCollection(BrickColumn);
-impl BrickCollection {
+pub struct BrickCollection<BF: brick::BrickFeature>(BrickColumn<BF>);
+impl<BF: brick::BrickFeature> BrickCollection<BF> {
     pub fn spawn<BM, BS, SF>(
         disp_size: nalgebra::Vector2<f32>, 
-        param: BrickSpawnParam<BM, BS, SF>, 
+        param: BrickSpawnParam<BM, BS, SF, BF>, 
     ) -> Self where
         BM: Into<nalgebra::Vector2<f32>>, 
         BS: Into<nalgebra::Vector2<f32>>, 
@@ -28,7 +28,7 @@ impl BrickCollection {
             [u32; 2], 
             nalgebra::Point2<f32>, 
             nalgebra::Vector2<f32>
-        ) -> Option<Brick>, 
+        ) -> Option<Brick<BF>>, 
     {
         Self(BrickColumn::spawn(
             param.column, 
@@ -40,20 +40,20 @@ impl BrickCollection {
             param.spawn_f, 
         ))
     }
-    pub fn get(&self) -> &BrickColumn { &self.0 }
-    pub fn get_mut(&mut self) -> &mut BrickColumn { &mut self.0 }
+    pub fn get(&self) -> &BrickColumn<BF> { &self.0 }
+    pub fn get_mut(&mut self) -> &mut BrickColumn<BF> { &mut self.0 }
 }
-impl super::AsInstance for BrickCollection {
+impl<BF: brick::BrickFeature> super::AsInstance for BrickCollection<BF> {
     fn as_instance(&self, instances: &mut super::RawInstArray) {
         self.0.as_instance(instances)
     }
 }
 
 /// ブロックの行
-pub struct BrickColumn {
-    bricks: Vec<BrickRow>, 
+pub struct BrickColumn<BF: brick::BrickFeature> {
+    bricks: Vec<BrickRow<BF>>, 
 }
-impl BrickColumn {
+impl<BF: brick::BrickFeature> BrickColumn<BF> {
     pub fn spawn(
         column: u32, 
         row: u32, 
@@ -62,7 +62,7 @@ impl BrickColumn {
         brick_size: nalgebra::Vector2<f32>, 
         disp_size: nalgebra::Vector2<f32>, 
         spawn_f: Arc<PMutex<
-            impl FnMut([u32; 2], nalgebra::Point2<f32>, nalgebra::Vector2<f32>) -> Option<Brick>
+            impl FnMut([u32; 2], nalgebra::Point2<f32>, nalgebra::Vector2<f32>) -> Option<Brick<BF>>
         >>, 
     ) -> Self {
         let height = column as f32 * brick_size.y + (column - 1) as f32 * brick_margin.y;
@@ -88,10 +88,10 @@ impl BrickColumn {
     pub fn collision(
         &mut self, 
         ball: &super::ball::Ball, 
-        f: impl FnMut(&Brick) + Clone, 
+        state: &mut super::super::state::BreakOutGameState, 
     ) -> Option<BBCollisionPoint> {
         for b in self.bricks.iter_mut()
-            .map(|b| b.collision(ball, f.clone()))
+            .map(|b| b.collision(ball, state))
         {
             if let Some(r) = b { return Some(r) }
         }
@@ -105,18 +105,18 @@ impl BrickColumn {
         count
     }
 }
-impl super::AsInstance for BrickColumn {
+impl<BF: brick::BrickFeature> super::AsInstance for BrickColumn<BF> {
     fn as_instance(&self, instances: &mut super::RawInstArray) {
         self.bricks.iter().for_each(|b| b.as_instance(instances))
     }
 }
 
 /// ブロックの列
-pub struct BrickRow {
-    bricks: Vec<Option<Brick>>, 
+pub struct BrickRow<BF: brick::BrickFeature> {
+    bricks: Vec<Option<Brick<BF>>>, 
     count: usize, 
 }
-impl BrickRow {
+impl<BF: brick::BrickFeature> BrickRow<BF> {
     pub fn spawn(
         row: u32, 
         column: u32, 
@@ -125,7 +125,7 @@ impl BrickRow {
         brick_size: nalgebra::Vector2<f32>, 
         disp_size: nalgebra::Vector2<f32>, 
         spawn_f: Arc<PMutex<
-            impl FnMut([u32; 2], nalgebra::Point2<f32>, nalgebra::Vector2<f32>) -> Option<Brick>
+            impl FnMut([u32; 2], nalgebra::Point2<f32>, nalgebra::Vector2<f32>) -> Option<Brick<BF>>
         >>, 
     ) -> Self {
         let width = row as f32 * brick_size.x + (row - 1) as f32 * brick_margin;
@@ -152,16 +152,15 @@ impl BrickRow {
     pub fn collision(
         &mut self, 
         ball: &super::ball::Ball, 
-        mut f: impl FnMut(&Brick), 
+        state: &mut super::super::state::BreakOutGameState, 
     ) -> Option<BBCollisionPoint> {
         for b in self.bricks.iter_mut()
         {
             if let Some(rb) = if let Some(rb) = b {
-                rb.collision(ball)
+                rb.collision(ball, state)
             } else {
                 None
             } {
-                if let Some(b) = b { f(b) }
                 self.count -= 1;
                 *b = None;
                 return Some(rb)
@@ -170,33 +169,11 @@ impl BrickRow {
         None
     }
 }
-impl super::AsInstance for BrickRow {
+impl<BF: brick::BrickFeature> super::AsInstance for BrickRow<BF> {
     fn as_instance(&self, instances: &mut super::RawInstArray) {
         self.bricks.iter()
             .filter_map(|b| b.as_ref())
             .for_each(|b| b.as_instance(instances))
-    }
-}
-
-pub(super) fn brick_spawner(
-    pos: [u32; 2], 
-    blkpos: nalgebra::Point2<f32>, 
-    blksize: nalgebra::Vector2<f32>, 
-) -> Option<Brick> {
-    if pos[1] % 3 == 0 {
-        None
-    } else {
-        Some(Brick::spawn(
-            blkpos, 
-            blksize, 
-            [
-                1. - pos[1] as f32 * (1. / 18.), 
-                pos[0] as f32 * (1. / 18.), 
-                pos[1] as f32 * (1. / 18.), 
-                1.
-            ], 
-            100 * pos[1] as u64, 
-        ))
     }
 }
 
@@ -208,7 +185,8 @@ pub struct BrickSpawnParam<
         [u32; 2], 
         nalgebra::Point2<f32>, 
         nalgebra::Vector2<f32>
-    ) -> Option<Brick>, 
+    ) -> Option<Brick<BF>>, 
+    BF: brick::BrickFeature, 
 > {
     pub column: u32, 
     pub row: u32, 

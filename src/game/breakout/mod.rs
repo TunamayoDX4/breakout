@@ -14,14 +14,14 @@ pub mod state;
 /// エンティティ
 pub mod entities;
 
-pub struct BreakOut {
+pub struct BreakOut<BF: entities::brick::brick::BrickFeature> {
     text: text_renderer::BreakOutGameTextRenderer, 
     renderer: obj_renderer::BreakOutRenderer, 
     state: state::BreakOutGameState, 
-    entities: entities::BreakOutEntities, 
+    entities: entities::BreakOutEntities<BF>, 
     to_pause: bool, 
 }
-impl BreakOut {
+impl<BF: entities::brick::brick::BrickFeature> BreakOut<BF> {
     pub fn new(
         gfx_ctx: &crate::gfx::WGContext, 
         text_glyph: super::util::text_renderer::TextRendererGMArc, 
@@ -31,8 +31,9 @@ impl BreakOut {
             impl FnMut(
                 [u32; 2], 
                 nalgebra::Point2<f32>, 
-                nalgebra::Vector2<f32>
-            ) -> Option<entities::brick::Brick>
+                nalgebra::Vector2<f32>, 
+            ) -> Option<entities::brick::Brick<BF>>, 
+            BF
         >
     ) -> anyhow::Result<Self> {
         let renderer = obj_renderer::BreakOutRenderer::new(gfx_ctx)?;
@@ -56,7 +57,7 @@ impl BreakOut {
         })
     }
 }
-impl super::scene::GameScene for BreakOut {
+impl<BF: entities::brick::brick::BrickFeature> super::scene::GameScene for BreakOut<BF> {
     fn name(&self) -> std::borrow::Cow<'static, str> {
         "ブロック崩し".into()
     }

@@ -20,7 +20,16 @@ impl Ball {
         angle,
         speed,
     } }
-    pub fn update(&mut self, state: &super::super::state::BreakOutGameState) {
+    pub fn update(
+        &mut self, 
+        state: &super::super::state::BreakOutGameState, 
+        diff: &super::super::state::BreakOutDifficulity, 
+    ) {
+        match diff {
+            crate::game::breakout::state::BreakOutDifficulity::Easy => self.speed = 250. / 60.,
+            crate::game::breakout::state::BreakOutDifficulity::Normal => self.speed = 300. / 60.,
+            crate::game::breakout::state::BreakOutDifficulity::Hard => self.speed = 350. / 60.,
+        }
         match state.state {
             super::super::state::GameState::Yes => {},
             super::super::state::GameState::GameOver => self.model.color = [1., 0., 0., 0.],
@@ -116,13 +125,13 @@ impl Ball {
             sfx_ctx.play_resource("reflection", |r| r);
         }
     }
-    pub fn refle_brick(
+    pub fn refle_brick<BF: super::brick::brick::BrickFeature>(
         &mut self, 
-        brick: &mut super::brick::BrickColumn, 
-        f: impl FnMut(&super::brick::Brick) + Clone, 
+        brick: &mut super::brick::BrickColumn<BF>, 
+        state: &mut super::super::state::BreakOutGameState, 
         sfx_ctx: &crate::sfx::SfxModule, 
     ) {
-        let rv = brick.collision(self, f)
+        let rv = brick.collision(self, state)
             .map(|r| match r {
                 super::brick::BBCollisionPoint::Top => nalgebra::Vector2::new(0., 1.),
                 super::brick::BBCollisionPoint::Bottom => nalgebra::Vector2::new(0., -1.),

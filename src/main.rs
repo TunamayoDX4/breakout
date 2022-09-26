@@ -39,6 +39,51 @@ impl MouseMoveBuffer {
     }
 }
 
+/// ブロックの機能
+pub struct BrickFeature {
+    score: u64, 
+    blk_type: BrickType, 
+}
+impl BrickFeature {
+    pub fn new(
+        score: u64, 
+        blk_type: BrickType, 
+    ) -> Self { Self {
+        score,
+        blk_type,
+    } }
+}
+impl game::breakout::entities::brick::brick::BrickFeature for BrickFeature {
+    fn hitted_process(
+        &self, 
+        state: &mut game::breakout::state::BreakOutGameState, 
+    ) {
+        *state.score.lock() += self.score;
+        match self.blk_type {
+            BrickType::Normal => {},
+            BrickType::Upper => match state.difficulity {
+                ref mut a @ game::breakout::state::BreakOutDifficulity::Easy => {
+                    *a = game::breakout::state::BreakOutDifficulity::Normal
+                },
+                _ => {}
+            },
+            BrickType::Top => match state.difficulity {
+                game::breakout::state::BreakOutDifficulity::Hard => {},
+                ref mut a @ _ => {
+                    *a = game::breakout::state::BreakOutDifficulity::Hard
+                }
+            },
+        }
+    }
+}
+
+/// ブロックの種類
+pub enum BrickType {
+    Normal, 
+    Upper, 
+    Top, 
+}
+
 /// マウスの移動率データ
 #[derive(Clone, Copy, Debug)]
 pub struct MouseMoveInput(pub nalgebra::Vector2<f32>);
@@ -88,31 +133,32 @@ async fn run() -> anyhow::Result<()> {
                 ctx, 
                 state.ipaexg.clone(), 
                 game::breakout::entities::brick::BrickSpawnParam {
-                    column: 12,
+                    column: 5,
                     row: 24,
                     margin_top: 32.,
-                    brick_margin: [2., 2.],
+                    brick_margin: [2., 4.],
                     brick_size: [24., 12.],
                     spawn_f: Arc::new(Mutex::new(|
                         pos: [u32; 2], 
                         blk_pos, 
                         blk_size, 
                     | {
-                        if pos[1] % 3 == 0 {
-                            None
-                        } else {
-                            Some(game::breakout::entities::brick::Brick::spawn(
-                                blk_pos, 
-                                blk_size, 
-                                [
-                                    1. - pos[1] as f32 * (1. / 18.), 
-                                    pos[0] as f32 * (1. / 18.), 
-                                    pos[1] as f32 * (1. / 18.), 
-                                    1.
-                                ], 
+                        Some(game::breakout::entities::brick::Brick::spawn(
+                            BrickFeature::new(
                                 100 * pos[1] as u64, 
-                            ))
-                        }
+                                if pos[1] >= 4 { BrickType::Top }
+                                else if pos[1] >= 3 { BrickType::Upper }
+                                else { BrickType::Normal }, 
+                            ), 
+                            blk_pos, 
+                            blk_size, 
+                            [
+                                1. - pos[1] as f32 * (1. / 5.), 
+                                pos[0] as f32 * (1. / 24.), 
+                                pos[1] as f32 * (1. / 5.), 
+                                1.
+                            ], 
+                        ))
                     })),
                 }, 
             )?))

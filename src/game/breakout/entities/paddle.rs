@@ -24,8 +24,8 @@ pub enum PaddleDifficulity {
 }
 impl PaddleDifficulity {
     pub fn size(&self) -> nalgebra::Vector2<f32> { match self {
-        Self::Easy => [128., 8.].into(),
-        Self::Normal => [64., 8.].into(),
+        Self::Easy => [64., 8.].into(),
+        Self::Normal => [48., 8.].into(),
         Self::Hard => [32., 8.].into(),
     }}
 }
@@ -56,6 +56,17 @@ impl Paddle {
         state: &mut super::super::state::BreakOutGameState, 
         ball: &mut Option<super::ball::Ball>, 
     ) {
+        self.difficulity = match state.difficulity {
+            crate::game::breakout::state::BreakOutDifficulity::Easy => {
+                PaddleDifficulity::Easy
+            },
+            crate::game::breakout::state::BreakOutDifficulity::Normal => {
+                PaddleDifficulity::Normal
+            },
+            crate::game::breakout::state::BreakOutDifficulity::Hard => {
+                PaddleDifficulity::Hard
+            },
+        };
         self.model.size = self.difficulity.size();
         if self.move_flag.ball_shot && ball.is_none() && state.remain_ball != 0 {
             *ball = Some(super::ball::Ball::spawn(

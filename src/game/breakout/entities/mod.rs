@@ -9,15 +9,15 @@ pub mod ball;
 pub mod paddle;
 pub mod pointer;
 
-pub struct BreakOutEntities {
-    bricks: brick::BrickCollection, 
+pub struct BreakOutEntities<BF: brick::brick::BrickFeature> {
+    bricks: brick::BrickCollection<BF>, 
     ball: Option<ball::Ball>, 
     paddle: paddle::Paddle, 
     pointer: pointer::Pointer, 
 }
-impl BreakOutEntities {
+impl<BF: brick::brick::BrickFeature> BreakOutEntities<BF> {
     pub fn new<BM, BS, SF>(
-        brick_param: brick::BrickSpawnParam<BM, BS, SF>, 
+        brick_param: brick::BrickSpawnParam<BM, BS, SF, BF>, 
         disp_size: nalgebra::Vector2<f32>, 
     )-> Self where
         BM: Into<nalgebra::Vector2<f32>>, 
@@ -26,7 +26,7 @@ impl BreakOutEntities {
             [u32; 2], 
             nalgebra::Point2<f32>, 
             nalgebra::Vector2<f32>
-        ) -> Option<brick::Brick>, 
+        ) -> Option<brick::Brick<BF>>, 
     { Self {
         paddle: paddle::Paddle::spawn(
             [disp_size.x / 2., 120.].into(), 
@@ -47,13 +47,11 @@ impl BreakOutEntities {
             b.refle_paddle(&self.paddle, &mut self.pointer, sfx_ctx);
             b.refle_brick(
                 self.bricks.get_mut(), 
-                |brick| {
-                    *state.score.lock() += (brick.score / 5) * state.remain_ball as u64;
-                }, 
+                state, 
                 sfx_ctx, 
             );
             b.moving(state);
-            b.update(state);
+            b.update(state, &state.difficulity);
             b.despawnable(sfx_ctx)
         }) { b } else { false } { 
             state.remain_ball -= 1;
@@ -86,7 +84,7 @@ impl BreakOutEntities {
         self.bricks.get().count()
     }
 }
-impl AsInstance for BreakOutEntities {
+impl<BF: brick::brick::BrickFeature> AsInstance for BreakOutEntities<BF> {
     fn as_instance(&self, instances: &mut super::obj_renderer::model::RawInstArray) {
         self.paddle.as_instance(instances);
         self.bricks.as_instance(instances);
