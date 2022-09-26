@@ -25,26 +25,26 @@ impl BreakOutGameTextRenderer {
 						"top".into(),
 						TextEntry::new(
 							TextBound::DispSize, 
-							[16., 16.], 
+							[16., 8.], 
 							vec![
 								TextObj::new(
-									" BreakOut ブロック崩し ", 
-									16., 
+									" BreakOut ", 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 								TextObj::new(
 									"", 
-									16., 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 								TextObj::new(
 									"", 
-									16., 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 								TextObj::new(
 									"", 
-									16., 
+									20., 
 									[1., 1., 1., 1.], 
 								)
 							], 
@@ -58,18 +58,18 @@ impl BreakOutGameTextRenderer {
 							[16., 608.], 
 							vec![
 								TextObj::new(
-									" Escキーで終了 ", 
-									16., 
+									" Esc to Exit ", 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 								TextObj::new(
-									" ADキー/カーソル移動で移動 ", 
-									16., 
+									" AD or Cursor: Move ", 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 								TextObj::new(
-									" Spaceキー/左クリックで玉発射 ", 
-									16., 
+									" Space or Left-click : Shoot ", 
+									20., 
 									[1., 1., 1., 1.], 
 								), 
 							], 

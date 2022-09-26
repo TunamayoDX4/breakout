@@ -94,13 +94,13 @@ async fn run() -> anyhow::Result<()> {
     let window = WindowBuilder::new()
         .with_resizable(false)
         .with_inner_size(winit::dpi::PhysicalSize::new(640, 640))
-        .with_title("BreakOut ～ブロック崩し～")
+        .with_title("BreakOut")
         .build(&ev_loop)?;
     let wgpu_ctx = Arc::new(
         parking_lot::Mutex::new(gfx::WGContext::new(&window).await?)
     );
 
-    let mut sfx_ctx = sfx::SfxModule::new(0.25)?;
+    let mut sfx_ctx = sfx::SfxModule::new(0.063)?;
     sfx_ctx.add_resource(
         "pause", 
         rodio::Decoder::new_mp3(
@@ -131,7 +131,7 @@ async fn run() -> anyhow::Result<()> {
         |ctx, state| {
             Ok(Box::new(game::breakout::BreakOut::new(
                 ctx, 
-                state.ipaexg.clone(), 
+                state.font.clone(), 
                 game::breakout::entities::brick::BrickSpawnParam {
                     column: 5,
                     row: 24,
@@ -145,7 +145,7 @@ async fn run() -> anyhow::Result<()> {
                     | {
                         Some(game::breakout::entities::brick::Brick::spawn(
                             BrickFeature::new(
-                                100 * pos[1] as u64, 
+                                100 * (pos[1] as u64 + 1), 
                                 if pos[1] >= 4 { BrickType::Top }
                                 else if pos[1] >= 3 { BrickType::Upper }
                                 else { BrickType::Normal }, 

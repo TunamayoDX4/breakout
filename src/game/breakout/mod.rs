@@ -79,14 +79,14 @@ impl<BF: entities::brick::brick::BrickFeature> super::scene::GameScene for Break
         self.renderer.update(&self.entities);
         self.text.entry_mut("top").map(|entry| {
             entry.text_mut()[1].text = match self.entities.remain_brick() {
-                0 => " ゲームクリア！ ".into(), 
-                remain @ _ => format!(" 残りのブロック: {remain} ").into(), 
+                0 => " Game Clear!! ".into(), 
+                remain @ _ => format!(" Remain blocks : {remain} ").into(), 
             };
             entry.text_mut()[2].text = match self.state.remain_ball {
-                0 => " ゲームオーバー ".into(), 
-                remain @ _ => format!(" 残弾数 : {remain} ").into(), 
+                0 => " Game Over! ".into(), 
+                remain @ _ => format!(" Remain balls : {remain} ").into(), 
             };
-            entry.text_mut()[3].text = format!(" スコア : {0} ", *self.state.score.lock()).into()
+            entry.text_mut()[3].text = format!(" Score : {0} ", *self.state.score.lock()).into()
         });
         if !self.to_pause {
             Ok(super::scene::SceneController::NOp)
@@ -95,7 +95,7 @@ impl<BF: entities::brick::brick::BrickFeature> super::scene::GameScene for Break
             sfx_ctx.play_resource("pause", |r| r);
             Ok(super::scene::SceneController::NewScene(
                 Box::new(super::pause::Pause::new(
-                    state.ipaexg.clone()
+                    state.font.clone()
                 )?)
             ))
         }

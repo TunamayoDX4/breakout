@@ -14,6 +14,13 @@ I am also developing this software to learn programming and the Rust language, a
 
 ---
 
+## Special thanks
+
+MaouDamashii([MaouDamashii](https://maou.audio/)) : Distributors of Free Sound Effects  
+MPlusFonts([MPlufFonts](https://mplus-fonts.osdn.jp)) : Font Distributor
+
+---
+
 ## License
 MIT License([LICENSE-MIT](https://opensource.org/licenses/MIT)) or Apache License Version 2.0([LICENSE-APACHE](https://www.apache.org/licenses/LICENSE-2.0)) at your option.
 
@@ -70,6 +77,13 @@ MIT License([LICENSE-MIT](https://opensource.org/licenses/MIT)) or Apache Licens
 もしくは適当なところに"breakout.exe"とfontおよびseフォルダを
 全てコピーされることで実行が可能になります。
 
+
+---
+
+## スペシャル・サンクス
+
+魔王魂([魔王魂](https://maou.audio/)) : 利用している効果音の配布元
+M+フォント([M+フォント](https://mplus-fonts.osdn.jp)) : 利用しているフォントの配布元
 
 ---
 
