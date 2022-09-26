@@ -2,6 +2,22 @@
 
 This is a simple breakout clone game by Atari.
 
+There are still many bugs, but our first priority is to make sure that it works at a minimum and does not cause serious defects.
+
+---
+
+## Summary
+
+I created this game because my mother asked me to make a game like Nintendo's block crusher, which I had played when I was a child.
+
+I am also developing this software to learn programming and the Rust language, and to practice implementing multimedia processing.
+
+---
+
+## License
+MIT License([LICENSE-MIT](https://opensource.org/licenses/MIT)) or Apache License Version 2.0([LICENSE-APACHE](https://www.apache.org/licenses/LICENSE-2.0)) at your option.
+
+
 ---
 
 …The following explanation is in Japanese, which is the native language of the author.
