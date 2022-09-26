@@ -82,7 +82,7 @@ MIT License([LICENSE-MIT](https://opensource.org/licenses/MIT)) or Apache Licens
 
 ## スペシャル・サンクス
 
-魔王魂([魔王魂](https://maou.audio/)) : 利用している効果音の配布元
+魔王魂([魔王魂](https://maou.audio/)) : 利用している効果音の配布元  
 M+フォント([M+フォント](https://mplus-fonts.osdn.jp)) : 利用しているフォントの配布元
 
 ---
