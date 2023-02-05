@@ -17,6 +17,8 @@ pub mod breakout;
 /// ポーズ画面
 pub mod pause;
 
+pub mod draw_comms;
+
 use winit::event::{VirtualKeyCode, ElementState, MouseButton, MouseScrollDelta};
 pub struct GameCtx {
     gfx_ctx: std::sync::Arc<PMutex<crate::gfx::WGContext>>, 

@@ -10,7 +10,10 @@ use rodio::{
     }, 
     OutputStream, 
     Source, 
-    OutputStreamHandle, Sink, source::{Zero, Buffered}, Decoder
+    OutputStreamHandle, 
+    Sink, 
+    source::{Zero, Buffered}, 
+    Decoder, 
 };
 use hashbrown::HashMap;
 
