@@ -266,7 +266,15 @@ fn fern_init() -> anyhow::Result<()> {
             log::LevelFilter::Info
         })
         .level_for(
-            "wgpu_core::device", 
+            "wgpu_core", 
+            if cfg!(debug_assertions) {
+                log::LevelFilter::Debug
+            } else {
+                log::LevelFilter::Error
+            }
+        )
+        .level_for(
+            "wgpu_hal", 
             if cfg!(debug_assertions) {
                 log::LevelFilter::Debug
             } else {
