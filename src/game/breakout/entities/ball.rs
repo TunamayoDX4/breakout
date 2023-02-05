@@ -1,8 +1,8 @@
 /// ボール
 pub struct Ball {
     pub(super) model: super::Instance, 
-    angle: nalgebra::Vector2<f32>, 
-    speed: f32, 
+    pub(super) angle: nalgebra::Vector2<f32>, 
+    pub(super) speed: f32, 
 }
 impl Ball {
     pub fn spawn(

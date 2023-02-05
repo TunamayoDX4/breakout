@@ -76,6 +76,22 @@ impl Instance {
         && other.position.x - other.size.x / 2. <= self.position.x + self.size.x / 2.
         && other.position.y - other.size.y / 2. <= self.position.y + self.size.y / 2.
     }
+    pub fn edges(&self) -> [[nalgebra::Point2<f32>; 2]; 4] { 
+        let self_size = self.size * 0.5;
+        [[
+            [self.position.x - self_size.x, self.position.y - self_size.y].into(), 
+            [self.position.x + self_size.x, self.position.y - self_size.y].into(), 
+        ], [
+            [self.position.x - self_size.x, self.position.y + self_size.y].into(), 
+            [self.position.x + self_size.x, self.position.y + self_size.y].into(), 
+        ], [
+            [self.position.x - self_size.x, self.position.y - self_size.y].into(), 
+            [self.position.x - self_size.x, self.position.y + self_size.y].into(), 
+        ], [
+            [self.position.x + self_size.x, self.position.y - self_size.y].into(), 
+            [self.position.x + self_size.x, self.position.y + self_size.y].into(),
+        ]]
+    }
 }
 impl AsRef<Instance> for Instance {
     fn as_ref(&self) -> &Instance { self }

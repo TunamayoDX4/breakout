@@ -31,30 +31,52 @@ impl<BF: BrickFeature> Brick<BF> {
     pub fn collision(
         &self, 
         ball: &super::super::ball::Ball, 
-        state: &mut super::super::super::state::BreakOutGameState
+        _state: &mut super::super::super::state::BreakOutGameState
     ) -> Option<BBCollisionPoint> {
-        if self.model.collision_aabb(&ball.model) {
-            let bb_length = (
-                self.model.position - ball.model.position
-            ).normalize();
-            let aspect = self.model.size.x / self.model.size.y;
-            self.feature.hitted_process(state);
-            match (
-                bb_length.x.abs() / bb_length.y.abs() < aspect, 
-                bb_length.x.is_sign_positive(), 
-                bb_length.y.is_sign_positive()
-            ) {
-                (true, true, true) => Some(BBCollisionPoint::Top),
-                (true, true, false) => Some(BBCollisionPoint::Bottom),
-                (true, false, true) => Some(BBCollisionPoint::Top),
-                (true, false, false) => Some(BBCollisionPoint::Bottom),
-                (false, true, true) => Some(BBCollisionPoint::Right),
-                (false, true, false) => Some(BBCollisionPoint::Right),
-                (false, false, true) => Some(BBCollisionPoint::Left),
-                (false, false, false) => Some(BBCollisionPoint::Left),
-            }
-        } else {
-            None
+        let ball_delta = [
+            ball.model.position, 
+            ball.model.position + ball.angle * ball.speed, 
+        ];
+
+        {
+            let mut coll_delta = None;
+            let (a, b) = (
+                &ball_delta[0], 
+                &ball_delta[1], 
+            );
+            
+            let mut length = 1.0;
+
+            for (
+                count, brick_delta
+            ) in self.model.edges().into_iter()
+                .enumerate()
+            {
+                let (c, d) = (
+                    &brick_delta[0], 
+                    &brick_delta[1], 
+                );
+                let v_ab = b - a;
+                let v_cd = d - c;
+                let v_ac = c - a;
+
+                let bunbo = (v_ab.x * v_cd.y) - (v_ab.y * v_cd.x);
+                if bunbo.abs() <= f32::EPSILON { continue; }
+                let r = (v_cd.y * v_ac.x - v_cd.x * v_ac.y) / bunbo;
+                let s = (v_ab.y * v_ac.x - v_ab.x * v_ac.y) / bunbo;
+
+                if 0. <= r && r <= 1. && 0. <= s && s <= 1. { 
+                    if s <= length { length = s }
+                    else { continue }
+                    coll_delta = Some(match count {
+                        0 => BBCollisionPoint::Bottom, 
+                        1 => BBCollisionPoint::Top, 
+                        2 => BBCollisionPoint::Left, 
+                        _ => BBCollisionPoint::Right, 
+                    })
+                }}
+
+            coll_delta
         }
     }
     pub fn hit(&self, mut f: impl FnMut(&Self)) { f(self) }

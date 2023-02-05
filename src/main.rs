@@ -270,7 +270,7 @@ fn fern_init() -> anyhow::Result<()> {
             if cfg!(debug_assertions) {
                 log::LevelFilter::Debug
             } else {
-                log::LevelFilter::Warn
+                log::LevelFilter::Error
             }
         )
         // ログのアウトプット先の指定
