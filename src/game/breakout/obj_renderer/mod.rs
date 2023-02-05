@@ -40,6 +40,7 @@ impl crate::gfx::WGRenderer for BreakOutRenderer {
             bytemuck::cast_slice(&[self.camera_mat])
         );
 
+        self.instances_buffer.destroy();
         self.instances_buffer = ctx.device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: Some("Instance buffer"),

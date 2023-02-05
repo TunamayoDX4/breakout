@@ -182,16 +182,16 @@ async fn run() -> anyhow::Result<()> {
                     ..
                 }, 
                 .. 
-            } => game_ctx.key_input(*keycode, *state), 
+            } => {game_ctx.key_input(*keycode, *state)}, 
             WindowEvent::MouseInput { 
                 state, 
                 button, 
                 .. 
-            } => game_ctx.mouse_button_input(*button, *state), 
+            } => {game_ctx.mouse_button_input(*button, *state)}, 
             WindowEvent::MouseWheel { 
                 delta, 
                 .. 
-            } => game_ctx.mouse_wheel_input(*delta), 
+            } => {game_ctx.mouse_wheel_input(*delta)}, 
             _ => {}, 
         }, 
         Event::DeviceEvent { 

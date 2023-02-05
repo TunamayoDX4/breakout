@@ -131,14 +131,23 @@ impl Ball {
         state: &mut super::super::state::BreakOutGameState, 
         sfx_ctx: &crate::sfx::SfxModule, 
     ) {
-        let rv = brick.collision(self, state)
+        if let Some(rv) = brick.collision(self, state)
             .map(|r| match r {
-                super::brick::BBCollisionPoint::Top => nalgebra::Vector2::new(0., 1.),
-                super::brick::BBCollisionPoint::Bottom => nalgebra::Vector2::new(0., -1.),
-                super::brick::BBCollisionPoint::Left => nalgebra::Vector2::new(-1., 0.),
-                super::brick::BBCollisionPoint::Right => nalgebra::Vector2::new(1., 0.),
-            });
-        if let Some(rv) = rv {
+                super::brick::BBCollisionPoint::Top => if self.angle.y.is_sign_negative() {
+                    Some(nalgebra::Vector2::new(0., 1.))
+                } else { None },
+                super::brick::BBCollisionPoint::Bottom => if self.angle.y.is_sign_positive() {
+                    Some(nalgebra::Vector2::new(0., -1.))
+                } else { None },
+                super::brick::BBCollisionPoint::Left => if self.angle.x.is_sign_positive() {
+                    Some(nalgebra::Vector2::new(-1., 0.))
+                } else { None },
+                super::brick::BBCollisionPoint::Right => if self.angle.x.is_sign_negative() {
+                    Some(nalgebra::Vector2::new(1., 0.))
+                } else { None }
+            })
+            .flatten()
+        {
             sfx_ctx.play_resource("break", |r|r);
             let d = -self.angle.dot(&rv);
             self.angle += (d * rv) * 2.;

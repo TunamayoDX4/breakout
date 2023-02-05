@@ -67,7 +67,7 @@ impl SfxModuleInner {
         // バックで常に音量0で流し続ける
         mixer_ctrl.add(Zero::new(16, 44_100));
         sink.set_volume(volume);
-        sink.append(mixer.repeat_infinite());
+        sink.append(mixer);
         sink.play();
         let res_mngr = SfxResourceMngrInner::new();
         Ok(Self {
