@@ -9,7 +9,7 @@ use winit::{
         WindowEvent, 
         KeyboardInput, 
         DeviceEvent
-    }
+    }, platform::run_return::EventLoopExtRunReturn
 };
 
 /// グラフィクス
@@ -89,8 +89,8 @@ pub enum BrickType {
 pub struct MouseMoveInput(pub nalgebra::Vector2<f32>);
 
 /// コンテキストのスポーン及び実行
-async fn run() -> anyhow::Result<()> {
-    let ev_loop = EventLoop::new();
+async fn run() -> anyhow::Result<i32> {
+    let mut ev_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_resizable(false)
         .with_inner_size(winit::dpi::PhysicalSize::new(640, 640))
@@ -168,7 +168,7 @@ async fn run() -> anyhow::Result<()> {
 
 
     // イベントをポーリングします。終了した場合はmainには戻らず、ここで終了となります。
-    ev_loop.run(move |ev, _, ctl| match ev {
+    let res = ev_loop.run_return(move |ev, _, ctl| match ev {
         Event::WindowEvent { 
             window_id, 
             ref event 
@@ -231,15 +231,17 @@ async fn run() -> anyhow::Result<()> {
 
             // ゲームの処理
             match game_ctx.update(&sfx_ctx).expect("Game context update error") {
-                game::scene::SceneUpdateResult::Updated(_) => {},
+                game::scene::SceneUpdateResult::Updated(_) => {
+                    // 正常に処理が終わったら再描画を要求
+                    window.request_redraw();
+                },
                 game::scene::SceneUpdateResult::EmptyScene => ctl.set_exit(),
             };
-
-            // 再描画
-            window.request_redraw();
         }, 
         _ => {},  
     });
+
+    Ok(res)
 }
 
 /// ロガーの初期化
@@ -294,5 +296,8 @@ fn main() -> anyhow::Result<()> {
     fern_init()?;
 
     // コンテキストの実行
-    pollster::block_on(run())
+    let result = pollster::block_on(run())?;
+    log::info!("process result: {result}");
+
+    Ok(())
 }
