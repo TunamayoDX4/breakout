@@ -4,6 +4,15 @@ pub trait DrawCommand {
     fn draw(&self);
 }
 
+pub enum DrawCommandElement {}
+
+pub enum DrawCommandInstance {
+    Element(DrawCommandElement), 
+    Group(Vec<Option<DrawCommandElement>>), 
+}
+
+pub struct DrawCommandQueue(Vec<Option<DrawCommandInstance>>);
+
 pub enum DrawComm<CC: DrawCommand> {
     Dot (shape::Dot), 
     Line (shape::Line), 
