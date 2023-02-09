@@ -1,4 +1,5 @@
 pub mod shape;
+pub mod renderer_part;
 
 pub trait DrawCommand {
     fn draw(&self);

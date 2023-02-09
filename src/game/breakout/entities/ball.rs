@@ -50,14 +50,22 @@ impl Ball {
         disp_size: nalgebra::Vector2<f32>, 
         sfx_ctx: &crate::sfx::SfxModule
     ) {
-        let wvx = if disp_size.x <= self.model.position.x {
+        let wvx = if 
+            disp_size.x <= self.model.position.x 
+            && self.angle.x.is_sign_positive() 
+        {
             Some(nalgebra::Vector2::new(-1., 0.))
-        } else if self.model.position.x <= 0. {
+        } else if self.model.position.x <= 0. 
+            && self.angle.x.is_sign_negative()
+        {
             Some(nalgebra::Vector2::new(1., 0.))
         } else {
             None
         };
-        let wvy = if disp_size.y <= self.model.position.y {
+        let wvy = if 
+            disp_size.y <= self.model.position.y 
+            && self.angle.y.is_sign_positive()
+        {
             Some(nalgebra::Vector2::new(0., -1.))
         } else {
             None

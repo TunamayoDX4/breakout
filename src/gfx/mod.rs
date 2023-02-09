@@ -39,7 +39,7 @@ impl WGContext {
         let (device, queue) = adapter.request_device(
             &DeviceDescriptor { 
                 label: None, 
-                features: Features::empty(), 
+                features: Features::POLYGON_MODE_LINE, 
                 limits: Limits::default() 
             }, 
             None
