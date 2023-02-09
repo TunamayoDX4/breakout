@@ -41,3 +41,28 @@ impl<CC: DrawCommand> DrawCommQueue<CC> {
         self.0.clear();
     }
 }
+
+pub struct Renderer {
+    dot: DotRenderer, 
+    line: LineRenderer, 
+    triangle_line: TriangleLineRenderer, 
+    quadangle_line: QuadangleLineRenderer, 
+    triangle: TriangleRenderer, 
+    quadangle: QuadangleRenderer, 
+}
+
+pub struct RendererParts {
+    render_pipeline: wgpu::RenderPipeline, 
+    vertex_buffer: wgpu::Buffer, 
+    index_buffer: wgpu::Buffer, 
+    num_indices: u32, 
+}
+
+pub struct DotRenderer(RendererParts);
+pub struct LineRenderer(RendererParts);
+pub struct TriangleLineRenderer(RendererParts);
+pub struct QuadangleLineRenderer(RendererParts);
+
+pub struct TriangleRenderer(RendererParts);
+pub struct QuadangleRenderer(RendererParts);
+
