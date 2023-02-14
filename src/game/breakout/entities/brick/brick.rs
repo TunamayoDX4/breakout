@@ -65,15 +65,16 @@ impl<BF: BrickFeature> Brick<BF> {
                 let r = (v_cd.y * v_ac.x - v_cd.x * v_ac.y) / bunbo;
                 let s = (v_ab.y * v_ac.x - v_ab.x * v_ac.y) / bunbo;
 
-                if 0. <= r && r <= 1. && 0. <= s && s <= 1. { 
-                    if s <= length { length = s }
-                    else { continue }
-                    coll_delta = Some(match count {
-                        0 => BBCollisionPoint::Bottom, 
-                        1 => BBCollisionPoint::Top, 
-                        2 => BBCollisionPoint::Left, 
-                        _ => BBCollisionPoint::Right, 
-                    })
+                if 0. <= r && r <= 1. && 0. <= s && s <= 1. {
+                    if r < length {
+                        length = r;
+                        coll_delta = Some(match count {
+                            0 => BBCollisionPoint::Bottom, 
+                            1 => BBCollisionPoint::Top, 
+                            2 => BBCollisionPoint::Left, 
+                            _ => BBCollisionPoint::Right, 
+                        });
+                    }
                 }}
 
             coll_delta

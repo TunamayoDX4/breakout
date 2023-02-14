@@ -17,7 +17,8 @@ pub mod breakout;
 /// ポーズ画面
 pub mod pause;
 
-pub mod draw_comms;
+/// コマンドを利用したレンダラ
+pub mod comm_renderer;
 
 use winit::event::{VirtualKeyCode, ElementState, MouseButton, MouseScrollDelta};
 pub struct GameCtx {

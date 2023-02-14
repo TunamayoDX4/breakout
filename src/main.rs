@@ -167,7 +167,7 @@ async fn run() -> anyhow::Result<i32> {
     let mut mouse_buffer = MouseMoveBuffer::new();
 
 
-    // イベントをポーリングします。終了した場合はmainには戻らず、ここで終了となります。
+    // イベントのループ
     let res = ev_loop.run_return(move |ev, _, ctl| match ev {
         Event::WindowEvent { 
             window_id, 
