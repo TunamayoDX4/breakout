@@ -1,68 +1,62 @@
-pub mod shape;
-
-pub trait DrawCommand {
-    fn draw(&self);
+/// コマンド用のレンダラのためのコンテキスト
+pub trait RenderCtx: Send + Sync {
+    type Comm: RenderCommand<Ctx = Self>;
 }
 
-pub enum DrawCommandElement {}
-
-pub enum DrawCommandInstance {
-    Element(DrawCommandElement), 
-    Group(Vec<Option<DrawCommandElement>>), 
+/// コマンド用のレンダラのためのコマンド
+pub trait RenderCommand: Sized + Send + Sync {
+    type Ctx: RenderCtx<Comm = Self>;
+    fn rendering(
+        self, 
+        ctx: &Self::Ctx, 
+        wgpu_ctx: &crate::gfx::WGContext, 
+        output: &wgpu::SurfaceTexture, 
+        view: &wgpu::TextureView, 
+    );
 }
 
-pub struct DrawCommandQueue(Vec<Option<DrawCommandInstance>>);
-
-pub enum DrawComm<CC: DrawCommand> {
-    Dot (shape::Dot), 
-    Line (shape::Line), 
-    Polygon (shape::Polygon), 
-    Rectangle (shape::Rectangle), 
-    Quadangle (shape::Quadangle), 
-    Custom(CC), 
-}
-impl<CC: DrawCommand> DrawComm<CC> {
-    pub fn draw(&self) { match self {
-        Self::Custom(custom) => custom.draw(), 
-        _ => todo!(), 
-    }}
-}
-
-pub struct DrawCommQueue<CC: DrawCommand> (Vec<Option<DrawComm<CC>>>);
-impl<CC: DrawCommand> DrawCommQueue<CC> {
-    pub fn draw(&mut self, comm: DrawComm<CC>) {
-        self.0.push(Some(comm))
+/// コマンド用のレンダラのためのコマンド・キュー
+pub struct CommandRendererQueue<RC: RenderCommand> (Vec<Option<RC>>);
+impl<RC: RenderCommand> CommandRendererQueue<RC> {
+    pub fn push<T: TryInto<RC>>(&mut self, comm: T) -> Result<(), T::Error> {
+        self.0.push(Some(comm.try_into()?));
+        Ok(())
     }
-    pub fn rendering(&mut self) {
-        for comm in self.0.iter_mut()
-            .map(|o| o.take())
-            .filter_map(|comm| comm)
-        { comm.draw() }
+    pub fn rendering(
+        &mut self, 
+        ctx: &RC::Ctx, 
+        wgpu_ctx: &crate::gfx::WGContext, 
+        output: &wgpu::SurfaceTexture, 
+        view: &wgpu::TextureView, 
+    ) {
+        self.0.iter_mut()
+            .filter_map(|comm| comm.take())
+            .for_each(|comm| comm.rendering(
+                ctx, 
+                wgpu_ctx, 
+                output, 
+                view, 
+            ));
         self.0.clear();
     }
 }
 
-pub struct Renderer {
-    dot: DotRenderer, 
-    line: LineRenderer, 
-    triangle_line: TriangleLineRenderer, 
-    quadangle_line: QuadangleLineRenderer, 
-    triangle: TriangleRenderer, 
-    quadangle: QuadangleRenderer, 
+/// コマンド用のレンダラ
+pub struct CommandRenderer<R: RenderCtx> {
+    queue: CommandRendererQueue<R::Comm>, 
+    ctx: R, 
 }
-
-pub struct RendererParts {
-    render_pipeline: wgpu::RenderPipeline, 
-    vertex_buffer: wgpu::Buffer, 
-    index_buffer: wgpu::Buffer, 
-    num_indices: u32, 
+impl<R: RenderCtx> CommandRenderer<R> {
+    pub fn rendering(
+        &mut self, 
+        wgpu_ctx: &crate::gfx::WGContext, 
+    ) -> Result<(), wgpu::SurfaceError> {
+        let output = wgpu_ctx.surface.get_current_texture()?;
+        let view = output.texture.create_view(
+            &wgpu::TextureViewDescriptor::default()
+        );
+        self.queue.rendering(&self.ctx, wgpu_ctx, &output, &view);
+        output.present();
+        Ok(())
+    }
 }
-
-pub struct DotRenderer(RendererParts);
-pub struct LineRenderer(RendererParts);
-pub struct TriangleLineRenderer(RendererParts);
-pub struct QuadangleLineRenderer(RendererParts);
-
-pub struct TriangleRenderer(RendererParts);
-pub struct QuadangleRenderer(RendererParts);
-

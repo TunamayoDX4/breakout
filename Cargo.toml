@@ -47,11 +47,14 @@ nalgebra = "0.31"
 # 軽量スレッド同期プリミティブ
 parking_lot = "0.12"
 
+# 並列処理支援ライブラリ
+rayon = "1.6"
+
 # WGPUの文字表示
 wgpu_glyph = "0.17"
 
 # ハッシュテーブル
-hashbrown = "0.12"
+hashbrown = "0.13"
 
 # メモリプロファイラ
 dhat = "0.3.2"

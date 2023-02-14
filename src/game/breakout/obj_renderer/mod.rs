@@ -66,7 +66,7 @@ impl crate::gfx::WGRenderer for BreakOutRenderer {
                         store: true,
                     },
                 })],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: None, 
             });
 
             // パイプラインをセット
