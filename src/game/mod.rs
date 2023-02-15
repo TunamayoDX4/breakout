@@ -20,6 +20,9 @@ pub mod pause;
 /// コマンドを利用したレンダラ
 pub mod comm_renderer;
 
+/// デフォルトの2Dレンダラ
+pub mod default_2d_renderer;
+
 use winit::event::{VirtualKeyCode, ElementState, MouseButton, MouseScrollDelta};
 pub struct GameCtx {
     gfx_ctx: std::sync::Arc<PMutex<crate::gfx::WGContext>>, 
