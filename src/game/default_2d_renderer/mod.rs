@@ -1,9 +1,11 @@
 use super::comm_renderer;
 
+pub mod shape;
+
 pub enum D2DRendererComm {
-	Dot, 
-	Line, 
-	Triangle, 
+	Dot(shape::Dot), 
+	Line(shape::Line), 
+	Triangle(shape::Triangle), 
 }
 impl comm_renderer::RenderCommand for D2DRendererComm {
     type Ctx = D2DRendererCtx;
@@ -14,39 +16,17 @@ impl comm_renderer::RenderCommand for D2DRendererComm {
         wgpu_ctx: &crate::gfx::WGContext, 
         output: &wgpu::SurfaceTexture, 
         view: &wgpu::TextureView, 
-    ) {
-        todo!()
-    }
-}
-
-pub struct Dot {
-	vertex_buffer: wgpu::Buffer, 
-}
-
-pub struct DotRenderer {
-	pipeline: wgpu::RenderPipeline, 
-}
-
-pub struct Line {
-	vertex_buffer: wgpu::Buffer, 
-}
-
-pub struct LineRenderer {
-	pipeline: wgpu::RenderPipeline, 
-}
-
-pub struct Triangle {
-	vertex_buffer: wgpu::Buffer, 
-}
-
-pub struct TriangleRenderer {
-	pipeline: wgpu::RenderPipeline, 
+    ) { match self {
+        D2DRendererComm::Dot(dot) => dot.rendering(wgpu_ctx, view, &ctx.dot),
+        D2DRendererComm::Line(line) => line.rendering(wgpu_ctx, view, &ctx.line),
+        D2DRendererComm::Triangle(tri) => tri.rendering(wgpu_ctx, view, &ctx.triangle),
+    }}
 }
 
 pub struct D2DRendererCtx {
-	dot: DotRenderer, 
-	line: LineRenderer, 
-	triangle: TriangleRenderer, 
+	dot: shape::DotRenderer, 
+	line: shape::LineRenderer, 
+	triangle: shape::TriangleRenderer, 
 }
 impl comm_renderer::RenderCtx for D2DRendererCtx {
     type Comm = D2DRendererComm;
