@@ -47,6 +47,12 @@ pub struct CommandRenderer<R: RenderCtx> {
     ctx: R, 
 }
 impl<R: RenderCtx> CommandRenderer<R> {
+    pub fn push<T: TryInto<R::Comm>>(
+        &mut self, 
+        comm: T, 
+    ) -> Result<(), T::Error> {
+        self.queue.push(comm)
+    }
     pub fn rendering(
         &mut self, 
         wgpu_ctx: &crate::gfx::WGContext, 
